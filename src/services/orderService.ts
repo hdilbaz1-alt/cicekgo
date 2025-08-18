@@ -1,4 +1,4 @@
-import { getApiUrl, getEndpoint } from '../config/api';
+import { getApiUrl } from '../config/api';
 
 const API_BASE_URL = getApiUrl('/api');
 

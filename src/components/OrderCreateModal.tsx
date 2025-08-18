@@ -150,8 +150,9 @@ export default function OrderCreateModal({ isOpen, onClose, onSuccess }: OrderCr
       } else {
         setError(response.message || 'Sipariş oluşturulurken hata oluştu');
       }
-    } catch (err: any) {
-      setError(err.message || 'Bağlantı hatası');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Bağlantı hatası';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

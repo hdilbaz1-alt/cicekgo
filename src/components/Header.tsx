@@ -4,14 +4,14 @@ import { useState, useEffect } from 'react';
 import ProfileModal from './ProfileModal';
 
 interface HeaderProps {
-  user: any;
+  user: { name: string; email: string; userName?: string } | null;
   onLogout: () => void;
 }
 
 export default function Header({ user, onLogout }: HeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [tenantInfo, setTenantInfo] = useState<any>(null);
+  const [tenantInfo, setTenantInfo] = useState<{ name: string; lkStart: string; lkEnd: string; isExpired?: boolean } | null>(null);
   const [remainingDays, setRemainingDays] = useState(0);
 
   // Kullanıcı adından baş harfleri al

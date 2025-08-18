@@ -3,7 +3,7 @@
 interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  tenantInfo: any;
+  tenantInfo: { name: string; lkStart: string; lkEnd: string; isExpired?: boolean } | null;
   remainingDays: number;
 }
 

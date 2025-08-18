@@ -82,11 +82,12 @@ export default function LoginPage() {
       } else {
         setError(data.message || 'Giriş başarısız');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
-      if (error.message.includes('401')) {
+      const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen hata';
+      if (errorMessage.includes('401')) {
         setError('Kullanıcı adı veya şifre hatalı');
-      } else if (error.message.includes('403')) {
+      } else if (errorMessage.includes('403')) {
         setError('Lisans süreniz dolmuştur');
       } else {
         setError('Bağlantı hatası. Lütfen tekrar deneyin.');

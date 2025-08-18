@@ -7,7 +7,24 @@ interface OrderUpdateModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  order: any; // Mevcut sipariş verisi
+  order: { 
+    orderCode: string; 
+    orderPkId: number; 
+    orderStatus: string; 
+    orderAmount: number; 
+    orderRemainingAmount: number; 
+    productType: string; 
+    deliveryDate: string; 
+    extraNote?: string; 
+    cardNote?: string; 
+    customerNote?: string; 
+    senderName: string; 
+    senderPhone: string; 
+    recipientName: string; 
+    recipientPhone: string; 
+    recipientAddress?: string; 
+    isNotified: boolean; 
+  } | null; // Mevcut sipariş verisi
 }
 
 export default function OrderUpdateModal({ isOpen, onClose, onSuccess, order }: OrderUpdateModalProps) {
@@ -91,6 +108,10 @@ export default function OrderUpdateModal({ isOpen, onClose, onSuccess, order }: 
     setError(null);
 
     try {
+      if (!order) {
+        setError('Sipariş bilgisi bulunamadı');
+        return;
+      }
       const response = await orderService.updateOrder(order.orderCode, formData);
       
       if (response.success) {
@@ -99,14 +120,15 @@ export default function OrderUpdateModal({ isOpen, onClose, onSuccess, order }: 
       } else {
         setError(response.message || 'Güncelleme başarısız');
       }
-    } catch (err: any) {
-      setError(err.message || 'Bağlantı hatası');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Bağlantı hatası';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !order) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

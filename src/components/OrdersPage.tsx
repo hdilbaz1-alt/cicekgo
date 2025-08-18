@@ -43,8 +43,8 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-  // Bugünün tarihini al
-  const todayString = today.toISOString().split('T')[0];
+  // Bugünün tarihini al - kullanılmıyor ama gelecekte gerekebilir
+  // const todayString = today.toISOString().split('T')[0];
 
   // Seçili tarihin etrafındaki 7 günü al (-3, seçili, +3)
   const getDateRange = () => {
@@ -138,8 +138,9 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
       } else {
         setError(response.message || 'Siparişler yüklenirken hata oluştu');
       }
-    } catch (err: any) {
-      setError(err.message || 'Bağlantı hatası');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Bağlantı hatası';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -154,7 +155,7 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
   // Sayfa yüklendiğinde bugünün siparişlerini getir
   useEffect(() => {
     fetchOrders(selectedDate);
-  }, []);
+  }, [selectedDate]);
 
   // Yenile butonu
   const handleRefresh = () => {

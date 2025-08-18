@@ -10,7 +10,7 @@ import OrdersPage from '@/components/OrdersPage';
 import { authService } from '@/services/authService';
 
 export default function HomePage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
