@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
+
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -32,66 +34,67 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // API login
-      const response = await fetch('http://188.132.201.243/api/Auth/login', {
+      // --- LOGIN ---
+      const res = await fetch(`${API_BASE}/Auth/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        // Not: Absolute HTTP yazmıyoruz; ya HTTPS domain ya da /api (rewrite) kullanıyoruz
         body: JSON.stringify({ userName: username, password }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!res.ok) {
+        // backend 401/403/500 vs.
+        throw new Error(String(res.status));
       }
 
-      const data = await response.json();
-      
-      if (data.success) {
-        // Token'ı kaydet
-        localStorage.setItem('token', data.data.token);
-        localStorage.setItem('user', JSON.stringify({
-          userId: data.data.userId,
-          userName: data.data.userName,
-          tenantId: data.data.tenantId,
-          roles: data.data.roles,
-          specialRoles: data.data.specialRoles
-        }));
+      const data = await res.json();
 
-        // Tenant bilgilerini al
+      if (data?.success) {
+        const token: string = data.data?.token;
+
+        // Token & user bilgileri
+        localStorage.setItem('token', token);
+        localStorage.setItem(
+          'user',
+          JSON.stringify({
+            userId: data.data?.userId,
+            userName: data.data?.userName,
+            tenantId: data.data?.tenantId,
+            roles: data.data?.roles,
+            specialRoles: data.data?.specialRoles,
+          })
+        );
+
+        // --- TENANT INFO ---
         try {
-          const tenantResponse = await fetch('http://188.132.201.243/api/TenantPing/info', {
+          const tRes = await fetch(`${API_BASE}/TenantPing/info`, {
             method: 'GET',
             headers: {
-              'Authorization': `Bearer ${data.data.token}`,
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
           });
 
-          if (tenantResponse.ok) {
-            const tenantData = await tenantResponse.json();
-            if (tenantData.success) {
+          if (tRes.ok) {
+            const tenantData = await tRes.json();
+            if (tenantData?.success) {
               localStorage.setItem('tenantInfo', JSON.stringify(tenantData.data));
             }
           }
-        } catch (tenantError) {
-          console.warn('Tenant info alınamadı:', tenantError);
+        } catch (tenantErr) {
+          console.warn('Tenant info alınamadı:', tenantErr);
         }
-        
+
         router.push('/');
       } else {
-        setError(data.message || 'Giriş başarısız');
+        setError(data?.message || 'Giriş başarısız');
       }
-    } catch (error: unknown) {
-      console.error('Login error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen hata';
-      if (errorMessage.includes('401')) {
-        setError('Kullanıcı adı veya şifre hatalı');
-      } else if (errorMessage.includes('403')) {
-        setError('Lisans süreniz dolmuştur');
-      } else {
-        setError('Bağlantı hatası. Lütfen tekrar deneyin.');
-      }
+    } catch (err: unknown) {
+      console.error('Login error:', err);
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('401')) setError('Kullanıcı adı veya şifre hatalı');
+      else if (msg.includes('403')) setError('Lisans süreniz dolmuştur');
+      else setError('Bağlantı hatası. Lütfen tekrar deneyin.');
     } finally {
       setIsLoading(false);
     }
@@ -106,18 +109,18 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Modern Logo */}
+        {/* Logo */}
         <div className="text-center mb-8">
           <div className="mb-4">
-            <img 
-              src="/cicekgo-logo.png" 
-              alt="ÇiçekGo Logo" 
+            <img
+              src="/cicekgo-logo.png"
+              alt="ÇiçekGo Logo"
               className="h-24 w-auto mx-auto"
             />
           </div>
         </div>
 
-        {/* Modern Login Card */}
+        {/* Card */}
         <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-8">
           {step === 1 ? (
             <form onSubmit={handleUsernameSubmit} className="space-y-6">
@@ -141,7 +144,7 @@ export default function LoginPage() {
                   />
                 </div>
               </div>
-              
+
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
                   <div className="flex items-center">
@@ -167,7 +170,7 @@ export default function LoginPage() {
                   <p className="text-sm text-blue-600 font-medium">Kullanıcı adı</p>
                   <p className="text-gray-900 font-semibold text-lg">{username}</p>
                 </div>
-                
+
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700">
                     Şifre
