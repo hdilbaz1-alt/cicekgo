@@ -33,7 +33,7 @@ export default function LoginPage() {
 
     try {
       // API login
-      const response = await fetch('https://localhost:7138/api/Auth/login', {
+      const response = await fetch('http://188.132.201.243/api/Auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ export default function LoginPage() {
 
         // Tenant bilgilerini al
         try {
-          const tenantResponse = await fetch('https://localhost:7138/api/TenantPing/info', {
+          const tenantResponse = await fetch('http://188.132.201.243/api/TenantPing/info', {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${data.data.token}`,
