@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Extensions.Configuration.Sources.Objects</name>
+    </assembly>
+    <members>
+        <member name="T:Extensions.Configuration.Sources.Objects.ConfigurationKeyComparer">
+            <summary>
+            IComparer implementation used to order configuration keys.
+            </summary>
+        </member>
+        <member name="P:Extensions.Configuration.Sources.Objects.ConfigurationKeyComparer.Instance">
+            <summary>
+            The default instance.
+            </summary>
+        </member>
+        <member name="M:Extensions.Configuration.Sources.Objects.ConfigurationKeyComparer.Compare(System.String,System.String)">
+            <summary>
+            Compares two strings.
+            </summary>
+            <param name="x">First string.</param>
+            <param name="y">Second string.</param>
+            <returns>Less than 0 if x is less than y, 0 if x is equal to y and greater than 0 if x is greater than y.</returns>
+        </member>
+        <member name="M:Extensions.Configuration.Sources.Objects.TreeFolder.Fold``2(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{``0,System.Object}},System.Func{System.Object,``1})">
+            <summary>
+            Converts the specified sequence of trees of KeyValuePairs
+            to a flat sequence of KeyValuePairs, aggregating keys into sequences.
+            </summary>
+            <param name="source">A sequence of trees of KeyValuePairs</param>
+            <param name="valueConverter">A function that converts the values of KeyValuePairs at leafs.</param>
+            <typeparam name="TKey">The key-type of the KeyValuePairs.</typeparam>
+            <typeparam name="TValue">The type into which the values of KeyValuePairs at leafs are converted.</typeparam>
+            <Returns>A flat sequence of KeyValuePairs, where the keys represent the path of keys in the source.</Returns>
+            <Example>
+            [ { K1, { K11, V11 } }, { K2, V2 } ] => [ { [ K1, K11 ], V11 }, { [ K2 ], V2 } ]
+            </Example>
+        </member>
+        <member name="M:Extensions.Configuration.Sources.Objects.TreeMapProvider.GetTreeMap``1(``0)">
+            <summary>
+            Converts objects to dictionaries recursively,
+            mapping property-names to keys and property-values to values.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Extensions.Configuration.IConfigurationBuilderExtensions">
+            <summary>
+            Provides extension methods for <see cref="T:Microsoft.Extensions.Configuration.IConfigurationBuilder"/>
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Configuration.IConfigurationBuilderExtensions.AddObject``1(Microsoft.Extensions.Configuration.IConfigurationBuilder,``0)">
+            <summary>
+            Adds the properties of the specified <paramref name="source"/>
+            as configuration entries to the <see cref="T:Microsoft.Extensions.Configuration.IConfigurationBuilder"/>,
+            mapping property-names to keys and property-values to values,
+            including nested objects.
+            </summary>
+            <param name="builder">The builder to which to add the configuration entries.</param>
+            <param name="source">The object from which the properties are obtained.</param>
+            <typeparam name="T">The type of the specified <paramref name="source"/></typeparam>
+            <returns>The specified <see cref="T:Microsoft.Extensions.Configuration.IConfigurationBuilder"/> for chaining.</returns>
+            <Example>
+            builder.AddObject( ("value1", "value2") );
+            </Example>
+        </member>
+        <member name="M:Microsoft.Extensions.Configuration.IConfigurationProviderExtensions.TryGetValue(Microsoft.Extensions.Configuration.IConfigurationProvider,System.String)">
+            <summary>
+            Tries to get the configuration value for the specified key.
+            </summary>
+            <param name="provider">The <see cref="T:Microsoft.Extensions.Configuration.IConfigurationProvider"/> from which to get the value.</param>
+            <param name="key">The key, whose value to get.</param>
+            <returns>(true, value) if a value for the specified key was found, otherwise (false, null).</returns>
+        </member>
+        <member name="T:System.Disposable">
+            <summary>
+            An <see cref="T:System.IDisposable"/> implementation, that executes a specified <see cref="T:System.Action"/> on disposal
+            </summary>
+            <history>
+            [25-10-2018] - Donnermayer - Created
+            </history>
+        </member>
+        <member name="M:System.Disposable.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:System.Disposable"/> class,
+            that performs no action on disposal.
+            </summary>
+        </member>
+        <member name="M:System.Disposable.#ctor(System.Action)">
+            <summary>
+            Initializes a new instance of the <see cref="T:System.Disposable"/> class,
+            that performs the specified <paramref name="DisposeAction"/> on disposal.
+            </summary>
+            <param name="DisposeAction"></param>
+        </member>
+        <member name="P:System.Disposable.Empty">
+            <summary>
+            Returns an IDisposable,
+            that performs no action on disposal.
+            </summary>
+        </member>
+    </members>
+</doc>

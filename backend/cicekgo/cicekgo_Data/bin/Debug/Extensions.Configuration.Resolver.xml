@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Extensions.Configuration.Resolver</name>
+    </assembly>
+    <members>
+        <member name="M:Extensions.Configuration.Resolver.IValueProviderExtensions.ToResolverValueProvider(Extensions.Configuration.Resolver.IValueProvider,Microsoft.Extensions.Configuration.SubstitutionOptions,System.Func{System.String,System.String})">
+            <summary>
+            Creates an instance of <see cref="T:Extensions.Configuration.Resolver.ResolverValueProvider"/> from the specified
+            <paramref name="provider"/>.
+            </summary>
+        </member>
+        <member name="M:Extensions.Configuration.Resolver.ResolverValueProvider.#ctor(Extensions.Configuration.Resolver.IValueProvider,Microsoft.Extensions.Configuration.SubstitutionOptions,System.Func{System.String,System.String})">
+            <summary>
+            Initiaizes a new instance of the <see cref="T:Extensions.Configuration.Resolver.ResolverValueProvider"/>class.
+            </summary>
+            <param name="provider">The provider from which to get the raw values.</param>
+            <param name="options">The options to use.</param>
+            <param name="mapUnresolvable">
+            A function used to map placeholders, which could not be resolved.
+            </param>
+        </member>
+        <member name="M:Extensions.Configuration.Resolver.ResolverValueProvider.GetValue(System.String)">
+            <summary>
+            Gets the value associated with the specified <paramref name="key"/>,
+            recursively resolving placeholders.
+            </summary>
+            <param name="key">
+            The key whose value to resolve.
+            </param>
+        </member>
+        <member name="M:Extensions.Configuration.Resolver.ResolverValueProvider.TryGetValue(System.String)">
+            <summary>
+            Gets the value associated with the specified <paramref name="key"/>,
+            recursively resolving placeholders.
+            </summary>
+            <param name="key">
+            The key whose value to resolve.
+            </param>
+        </member>
+        <member name="T:Microsoft.Extensions.Configuration.IConfigurationExtensions">
+            <summary>
+            Provides extension methods for <see cref="T:Microsoft.Extensions.Configuration.IConfiguration"/>.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Configuration.IConfigurationExtensions.ToConfigurationValueProvider(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Creates an instance of <see cref="T:Extensions.Configuration.Resolver.ConfigurationValueProvider"/> from the specified
+            <paramref name="configuration"/>.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Configuration.IConfigurationExtensions.ResolveValue(Microsoft.Extensions.Configuration.IConfiguration,System.String,Microsoft.Extensions.Configuration.SubstitutionOptions,System.Func{System.String,System.String})">
+            <summary>
+            Gets the value associated with the specified <paramref name="key"/>,
+            recursively resolving placeholders according to specified <paramref name="options"/>
+            </summary>
+            <param name="configuration">
+            The <paramref name="configuration"/> providing the values.
+            </param>
+            <param name="key">
+            The key whose value to resolve.
+            </param>
+            <param name="options">
+            The options used in the resolver process.
+            </param>
+            <param name="mapUnresolvable">
+            A function used to map placeholders, which could not be resolved.
+            </param>
+        </member>
+        <member name="M:Microsoft.Extensions.Configuration.IConfigurationExtensions.ResolveValue(Microsoft.Extensions.Configuration.IConfiguration,System.String,Microsoft.Extensions.Configuration.SubstitutionOptions)">
+            <summary>
+            Gets the value associated with the specified <paramref name="key"/>,
+            recursively resolving placeholders according to specified <paramref name="options"/>
+            </summary>
+            <param name="configuration">
+            The <paramref name="configuration"/> providing the values.
+            </param>
+            <param name="key">
+            The key whose value to resolve.
+            </param>
+            <param name="options">
+            The options used in the resolver process.
+            </param>
+            <throws>
+            Throws <see cref="T:Microsoft.Extensions.Configuration.ValueUnresolvableException"/> when a value can
+            not be resolved.
+            </throws>
+        </member>
+        <member name="M:Microsoft.Extensions.Configuration.IConfigurationExtensions.TryResolveValue(Microsoft.Extensions.Configuration.IConfiguration,System.String,System.String@,Microsoft.Extensions.Configuration.SubstitutionOptions)">
+            <summary>
+            Gets the value associated with the specified <paramref name="key"/>,
+            recursively resolving placeholders according to specified <paramref name="options"/>.
+            </summary>
+            <param name="configuration">
+            The <paramref name="configuration"/> providing the values.
+            </param>
+            <param name="key">
+            The key whose value to resolve.
+            </param>
+            <param name="value">
+            When this method returns, the value associated with the specified key,
+            if the key can be resolved; otherwise, null.
+            This parameter is passed uninitialized.
+            </param>
+            <param name="options">
+            The options used in the resolver process.
+            </param>
+        </member>
+        <member name="M:Microsoft.Extensions.Configuration.IConfigurationExtensions.Resolved(Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Configuration.SubstitutionOptions)">
+            <summary>
+            Creates an instance of <see cref="T:Microsoft.Extensions.Configuration.IConfiguration"/>, wherein
+            entries with placeholders are resolved according to specified <paramref name="options"/>.
+            <param name="configuration">
+            The <paramref name="configuration"/> providing the values.
+            </param>
+            </summary>
+            <param name="options">
+            The options used in the resolver process.
+            </param>
+        </member>
+        <member name="M:Microsoft.Extensions.Configuration.ResolverOptionsExtensions.ToRegexPatterns(Microsoft.Extensions.Configuration.SubstitutionOptions)">
+            <summary>
+            Converts the specified <paramref name="options"/> to their corresponding
+            Regular Expressions.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Extensions.Configuration.SubstitutionOptions">
+            <summary>
+            The key-substitution syntax to use for configuration resolvers.
+            </summary>
+        </member>
+        <member name="F:Microsoft.Extensions.Configuration.SubstitutionOptions.None">
+            <summary>
+            No format.
+            </summary>
+        </member>
+        <member name="F:Microsoft.Extensions.Configuration.SubstitutionOptions.CurlyBracketsDollarEnv">
+            <summary>
+            {$env:KEY}
+            </summary>
+        </member>
+        <member name="F:Microsoft.Extensions.Configuration.SubstitutionOptions.DollarCurlyBrackets">
+            <summary>
+            ${KEY}
+            </summary>
+        </member>
+        <member name="F:Microsoft.Extensions.Configuration.SubstitutionOptions.DollarBrackets">
+            <summary>
+            $(KEY)
+            </summary>
+        </member>
+        <member name="F:Microsoft.Extensions.Configuration.SubstitutionOptions.Percent">
+            <summary>
+            %KEY%
+            </summary>
+        </member>
+        <member name="F:Microsoft.Extensions.Configuration.SubstitutionOptions.All">
+            <summary>
+            All other formats.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Extensions.Configuration.ValueUnresolvableException">
+            <summary>
+            The exception that is thrown,
+            when a value could not be resolved.
+            </summary>
+        </member>
+    </members>
+</doc>

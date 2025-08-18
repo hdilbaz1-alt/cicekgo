@@ -1,0 +1,409 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{2F1412DE-C6CC-4760-8099-CCDB2E56A0E9}|cicekgo_API\\cicekgo_API.csproj|c:\\users\\hazar dilbaz\\desktop\\cicekgo\\backend\\cicekgo\\cicekgo_api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2F1412DE-C6CC-4760-8099-CCDB2E56A0E9}|cicekgo_API\\cicekgo_API.csproj|solutionrelative:cicekgo_api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2F1412DE-C6CC-4760-8099-CCDB2E56A0E9}|cicekgo_API\\cicekgo_API.csproj|c:\\users\\hazar dilbaz\\desktop\\cicekgo\\backend\\cicekgo\\cicekgo_api\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2F1412DE-C6CC-4760-8099-CCDB2E56A0E9}|cicekgo_API\\cicekgo_API.csproj|solutionrelative:cicekgo_api\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B94B5D4E-4762-4896-B973-52D1652D1733}|cicekgo_Business\\cicekgo_Business.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_business\\services\\userauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B94B5D4E-4762-4896-B973-52D1652D1733}|cicekgo_Business\\cicekgo_Business.csproj|solutionrelative:cicekgo_business\\services\\userauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B94B5D4E-4762-4896-B973-52D1652D1733}|cicekgo_Business\\cicekgo_Business.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_business\\services\\iuserauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B94B5D4E-4762-4896-B973-52D1652D1733}|cicekgo_Business\\cicekgo_Business.csproj|solutionrelative:cicekgo_business\\services\\iuserauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{86ACEEE5-5A3B-4EF7-99D6-FDDED09E7DD1}|cicekgo_Data\\cicekgo_Data.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_data\\repositories\\userauthrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{86ACEEE5-5A3B-4EF7-99D6-FDDED09E7DD1}|cicekgo_Data\\cicekgo_Data.csproj|solutionrelative:cicekgo_data\\repositories\\userauthrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{86ACEEE5-5A3B-4EF7-99D6-FDDED09E7DD1}|cicekgo_Data\\cicekgo_Data.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_data\\repositories\\iuserauthrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{86ACEEE5-5A3B-4EF7-99D6-FDDED09E7DD1}|cicekgo_Data\\cicekgo_Data.csproj|solutionrelative:cicekgo_data\\repositories\\iuserauthrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_core\\dto\\loginresultdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|solutionrelative:cicekgo_core\\dto\\loginresultdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_core\\requests\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|solutionrelative:cicekgo_core\\requests\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2F1412DE-C6CC-4760-8099-CCDB2E56A0E9}|cicekgo_API\\cicekgo_API.csproj|c:\\users\\hazar dilbaz\\desktop\\cicekgo\\backend\\cicekgo\\cicekgo_api\\controllers\\getorder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2F1412DE-C6CC-4760-8099-CCDB2E56A0E9}|cicekgo_API\\cicekgo_API.csproj|solutionrelative:cicekgo_api\\controllers\\getorder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B94B5D4E-4762-4896-B973-52D1652D1733}|cicekgo_Business\\cicekgo_Business.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_business\\services\\iorderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B94B5D4E-4762-4896-B973-52D1652D1733}|cicekgo_Business\\cicekgo_Business.csproj|solutionrelative:cicekgo_business\\services\\iorderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{86ACEEE5-5A3B-4EF7-99D6-FDDED09E7DD1}|cicekgo_Data\\cicekgo_Data.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_data\\repositories\\iorderrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{86ACEEE5-5A3B-4EF7-99D6-FDDED09E7DD1}|cicekgo_Data\\cicekgo_Data.csproj|solutionrelative:cicekgo_data\\repositories\\iorderrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B94B5D4E-4762-4896-B973-52D1652D1733}|cicekgo_Business\\cicekgo_Business.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_business\\services\\orderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B94B5D4E-4762-4896-B973-52D1652D1733}|cicekgo_Business\\cicekgo_Business.csproj|solutionrelative:cicekgo_business\\services\\orderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{86ACEEE5-5A3B-4EF7-99D6-FDDED09E7DD1}|cicekgo_Data\\cicekgo_Data.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_data\\repositories\\orderrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{86ACEEE5-5A3B-4EF7-99D6-FDDED09E7DD1}|cicekgo_Data\\cicekgo_Data.csproj|solutionrelative:cicekgo_data\\repositories\\orderrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_core\\requests\\orderaggregateupdaterequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|solutionrelative:cicekgo_core\\requests\\orderaggregateupdaterequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_core\\dto\\fullorderdetailsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|solutionrelative:cicekgo_core\\dto\\fullorderdetailsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_core\\requests\\fullordercreaterequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|solutionrelative:cicekgo_core\\requests\\fullordercreaterequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_core\\entities\\order.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|solutionrelative:cicekgo_core\\entities\\order.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_core\\requests\\orderupdaterequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|solutionrelative:cicekgo_core\\requests\\orderupdaterequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_core\\requests\\orderlistbydaterequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|solutionrelative:cicekgo_core\\requests\\orderlistbydaterequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2F1412DE-C6CC-4760-8099-CCDB2E56A0E9}|cicekgo_API\\cicekgo_API.csproj|c:\\users\\hazar dilbaz\\desktop\\cicekgo\\backend\\cicekgo\\cicekgo_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{2F1412DE-C6CC-4760-8099-CCDB2E56A0E9}|cicekgo_API\\cicekgo_API.csproj|solutionrelative:cicekgo_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2F1412DE-C6CC-4760-8099-CCDB2E56A0E9}|cicekgo_API\\cicekgo_API.csproj|c:\\users\\hazar dilbaz\\desktop\\cicekgo\\backend\\cicekgo\\cicekgo_api\\cicekgo_api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{2F1412DE-C6CC-4760-8099-CCDB2E56A0E9}|cicekgo_API\\cicekgo_API.csproj|solutionrelative:cicekgo_api\\cicekgo_api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{86ACEEE5-5A3B-4EF7-99D6-FDDED09E7DD1}|cicekgo_Data\\cicekgo_Data.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_data\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{86ACEEE5-5A3B-4EF7-99D6-FDDED09E7DD1}|cicekgo_Data\\cicekgo_Data.csproj|solutionrelative:cicekgo_data\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_core\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EB6DC598-4B83-49F2-9899-098686B1CBAF}|cicekgo_Core\\cicekgo_Core.csproj|solutionrelative:cicekgo_core\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B94B5D4E-4762-4896-B973-52D1652D1733}|cicekgo_Business\\cicekgo_Business.csproj|C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_business\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B94B5D4E-4762-4896-B973-52D1652D1733}|cicekgo_Business\\cicekgo_Business.csproj|solutionrelative:cicekgo_business\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 8,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "UserController.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_API\\Controllers\\UserController.cs",
+              "RelativeDocumentMoniker": "cicekgo_API\\Controllers\\UserController.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_API\\Controllers\\UserController.cs",
+              "RelativeToolTip": "cicekgo_API\\Controllers\\UserController.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAgwCQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-12T00:29:45.943Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "IUserAuthService.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Business\\Services\\IUserAuthService.cs",
+              "RelativeDocumentMoniker": "cicekgo_Business\\Services\\IUserAuthService.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Business\\Services\\IUserAuthService.cs",
+              "RelativeToolTip": "cicekgo_Business\\Services\\IUserAuthService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-12T00:28:53.158Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "UserAuthRepository.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Data\\Repositories\\UserAuthRepository.cs",
+              "RelativeDocumentMoniker": "cicekgo_Data\\Repositories\\UserAuthRepository.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Data\\Repositories\\UserAuthRepository.cs",
+              "RelativeToolTip": "cicekgo_Data\\Repositories\\UserAuthRepository.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAAEgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-12T00:28:24.794Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "IUserAuthRepository.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Data\\Repositories\\IUserAuthRepository.cs",
+              "RelativeDocumentMoniker": "cicekgo_Data\\Repositories\\IUserAuthRepository.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Data\\Repositories\\IUserAuthRepository.cs",
+              "RelativeToolTip": "cicekgo_Data\\Repositories\\IUserAuthRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-12T00:28:02.181Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "LoginResultDto.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Dto\\LoginResultDto.cs",
+              "RelativeDocumentMoniker": "cicekgo_Core\\Dto\\LoginResultDto.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Dto\\LoginResultDto.cs",
+              "RelativeToolTip": "cicekgo_Core\\Dto\\LoginResultDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-12T00:27:33.948Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "LoginRequest.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Requests\\LoginRequest.cs",
+              "RelativeDocumentMoniker": "cicekgo_Core\\Requests\\LoginRequest.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Requests\\LoginRequest.cs",
+              "RelativeToolTip": "cicekgo_Core\\Requests\\LoginRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-12T00:27:14.262Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "OrderAggregateUpdateRequest.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Requests\\OrderAggregateUpdateRequest.cs",
+              "RelativeDocumentMoniker": "cicekgo_Core\\Requests\\OrderAggregateUpdateRequest.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Requests\\OrderAggregateUpdateRequest.cs",
+              "RelativeToolTip": "cicekgo_Core\\Requests\\OrderAggregateUpdateRequest.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAA9wB0AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-11T23:42:25.49Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_API\\Program.cs",
+              "RelativeDocumentMoniker": "cicekgo_API\\Program.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_API\\Program.cs",
+              "RelativeToolTip": "cicekgo_API\\Program.cs",
+              "ViewState": "AgIAADUAAAAAAAAAAAAAAB4AAABAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-11T21:48:11.942Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "UserAuthService.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Business\\Services\\UserAuthService.cs",
+              "RelativeDocumentMoniker": "cicekgo_Business\\Services\\UserAuthService.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Business\\Services\\UserAuthService.cs",
+              "RelativeToolTip": "cicekgo_Business\\Services\\UserAuthService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-12T00:29:08.793Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "FullOrderDetailsDto.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Dto\\FullOrderDetailsDto.cs",
+              "RelativeDocumentMoniker": "cicekgo_Core\\Dto\\FullOrderDetailsDto.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Dto\\FullOrderDetailsDto.cs",
+              "RelativeToolTip": "cicekgo_Core\\Dto\\FullOrderDetailsDto.cs",
+              "ViewState": "AgIAABQAAAAAAAAAAAA7wCMAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-11T23:41:58.19Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "FullOrderCreateRequest.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Requests\\FullOrderCreateRequest.cs",
+              "RelativeDocumentMoniker": "cicekgo_Core\\Requests\\FullOrderCreateRequest.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Requests\\FullOrderCreateRequest.cs",
+              "RelativeToolTip": "cicekgo_Core\\Requests\\FullOrderCreateRequest.cs",
+              "ViewState": "AgIAABwAAAAAAAAAAAAlwCsAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-11T23:20:43.565Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "GetOrder.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_API\\Controllers\\GetOrder.cs",
+              "RelativeDocumentMoniker": "cicekgo_API\\Controllers\\GetOrder.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_API\\Controllers\\GetOrder.cs",
+              "RelativeToolTip": "cicekgo_API\\Controllers\\GetOrder.cs",
+              "ViewState": "AgIAABsAAAAAAAAAAAAowCEAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-11T21:42:35.161Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "OrderService.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Business\\Services\\OrderService.cs",
+              "RelativeDocumentMoniker": "cicekgo_Business\\Services\\OrderService.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Business\\Services\\OrderService.cs",
+              "RelativeToolTip": "cicekgo_Business\\Services\\OrderService.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAAAUwBsAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-11T21:42:19.977Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "IOrderService.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Business\\Services\\IOrderService.cs",
+              "RelativeDocumentMoniker": "cicekgo_Business\\Services\\IOrderService.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Business\\Services\\IOrderService.cs",
+              "RelativeToolTip": "cicekgo_Business\\Services\\IOrderService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-11T21:42:04.677Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "IOrderRepository.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Data\\Repositories\\IOrderRepository.cs",
+              "RelativeDocumentMoniker": "cicekgo_Data\\Repositories\\IOrderRepository.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Data\\Repositories\\IOrderRepository.cs",
+              "RelativeToolTip": "cicekgo_Data\\Repositories\\IOrderRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwA4AAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-11T21:39:40.598Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "OrderRepository.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Data\\Repositories\\OrderRepository.cs",
+              "RelativeDocumentMoniker": "cicekgo_Data\\Repositories\\OrderRepository.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Data\\Repositories\\OrderRepository.cs",
+              "RelativeToolTip": "cicekgo_Data\\Repositories\\OrderRepository.cs",
+              "ViewState": "AgIAABoBAAAAAAAAAAAjwCoBAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-11T21:40:19.344Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "cicekgo_API.csproj",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_API\\cicekgo_API.csproj",
+              "RelativeDocumentMoniker": "cicekgo_API\\cicekgo_API.csproj",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_API\\cicekgo_API.csproj",
+              "RelativeToolTip": "cicekgo_API\\cicekgo_API.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-08-11T21:46:35.417Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "Order.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Entities\\Order.cs",
+              "RelativeDocumentMoniker": "cicekgo_Core\\Entities\\Order.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Entities\\Order.cs",
+              "RelativeToolTip": "cicekgo_Core\\Entities\\Order.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-11T21:37:34.399Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_API\\appsettings.json",
+              "RelativeDocumentMoniker": "cicekgo_API\\appsettings.json",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_API\\appsettings.json",
+              "RelativeToolTip": "cicekgo_API\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAABGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-08-11T21:47:27.166Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "OrderUpdateRequest.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Requests\\OrderUpdateRequest.cs",
+              "RelativeDocumentMoniker": "cicekgo_Core\\Requests\\OrderUpdateRequest.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Requests\\OrderUpdateRequest.cs",
+              "RelativeToolTip": "cicekgo_Core\\Requests\\OrderUpdateRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-11T22:10:58.2Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "OrderListByDateRequest.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Requests\\OrderListByDateRequest.cs",
+              "RelativeDocumentMoniker": "cicekgo_Core\\Requests\\OrderListByDateRequest.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Requests\\OrderListByDateRequest.cs",
+              "RelativeToolTip": "cicekgo_Core\\Requests\\OrderListByDateRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-11T21:57:27.541Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "Class1.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Data\\Class1.cs",
+              "RelativeDocumentMoniker": "cicekgo_Data\\Class1.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Data\\Class1.cs",
+              "RelativeToolTip": "cicekgo_Data\\Class1.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-11T21:36:09.674Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "Class1.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Class1.cs",
+              "RelativeDocumentMoniker": "cicekgo_Core\\Class1.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\Class1.cs",
+              "RelativeToolTip": "cicekgo_Core\\Class1.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-11T21:35:57.22Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "Class1.cs",
+              "DocumentMoniker": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Business\\Class1.cs",
+              "RelativeDocumentMoniker": "cicekgo_Business\\Class1.cs",
+              "ToolTip": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Business\\Class1.cs",
+              "RelativeToolTip": "cicekgo_Business\\Class1.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-11T21:35:47.874Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

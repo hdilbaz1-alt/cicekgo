@@ -1,0 +1,368 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "cicekgo_API",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/Orders": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Orders"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderAggregateUpdateRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderAggregateUpdateRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderAggregateUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Orders/view/{orderId}": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Orders/view": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "parameters": [
+          {
+            "name": "take",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Orders/full-create": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FullOrderCreateRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FullOrderCreateRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FullOrderCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Orders/{id}": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/User/login": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FullOrderCreateRequest": {
+        "type": "object",
+        "properties": {
+          "Order_Id": {
+            "type": "string",
+            "nullable": true
+          },
+          "Order_Status": {
+            "type": "string",
+            "nullable": true
+          },
+          "Order_Sender": {
+            "type": "string",
+            "nullable": true
+          },
+          "Order_To": {
+            "type": "string",
+            "nullable": true
+          },
+          "Order_DeliveryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "Order_Amount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "Order_RemainingAmount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "Order_ProductType": {
+            "type": "string",
+            "nullable": true
+          },
+          "SenderName": {
+            "type": "string",
+            "nullable": true
+          },
+          "SenderPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "RecipientName": {
+            "type": "string",
+            "nullable": true
+          },
+          "RecipientPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "RecipientAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "Payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentDto"
+            },
+            "nullable": true
+          },
+          "CardNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "CustomerNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "ExtraNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "IsNotified": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "UserName": {
+            "type": "string",
+            "nullable": true
+          },
+          "Password": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrderAggregateUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "Order_Id": {
+            "type": "string",
+            "nullable": true
+          },
+          "Order_Status": {
+            "type": "string",
+            "nullable": true
+          },
+          "Order_Sender": {
+            "type": "string",
+            "nullable": true
+          },
+          "Order_To": {
+            "type": "string",
+            "nullable": true
+          },
+          "Order_DeliveryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "Order_Amount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "Order_RemainingAmount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "Order_ProductType": {
+            "type": "string",
+            "nullable": true
+          },
+          "SenderName": {
+            "type": "string",
+            "nullable": true
+          },
+          "SenderPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "RecipientName": {
+            "type": "string",
+            "nullable": true
+          },
+          "RecipientPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "RecipientAddress": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PaymentDto": {
+        "type": "object",
+        "properties": {
+          "Amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "PaymentDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "MethodName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

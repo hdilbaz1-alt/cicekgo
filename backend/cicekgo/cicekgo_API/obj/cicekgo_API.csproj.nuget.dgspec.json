@@ -1,0 +1,169 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_API\\cicekgo_API.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_API\\cicekgo_API.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_API\\cicekgo_API.csproj",
+        "projectName": "cicekgo_API",
+        "projectPath": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_API\\cicekgo_API.csproj",
+        "packagesPath": "C:\\Users\\Hazar Dilbaz\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_API\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Hazar Dilbaz\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Business\\cicekgo_Business.csproj": {
+                "projectPath": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Business\\cicekgo_Business.csproj"
+              },
+              "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\cicekgo_Core.csproj": {
+                "projectPath": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\cicekgo_Core.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Dapper": {
+              "target": "Package",
+              "version": "[2.1.66, )"
+            },
+            "Dapper.Contrib": {
+              "target": "Package",
+              "version": "[2.0.78, )"
+            },
+            "Extensions.Configuration": {
+              "target": "Package",
+              "version": "[0.0.4, )"
+            },
+            "Microsoft.Data.SqlClient": {
+              "target": "Package",
+              "version": "[6.0.2, )"
+            },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[9.0.8, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.6.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Business\\cicekgo_Business.csproj": {
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Business\\cicekgo_Business.csproj",
+        "projectName": "cicekgo_Business",
+        "projectPath": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Business\\cicekgo_Business.csproj",
+        "UsingMicrosoftNETSdk": false,
+        "frameworks": {
+          "net472": {
+            "projectReferences": {
+              "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\cicekgo_Core.csproj": {
+                "projectPath": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\cicekgo_Core.csproj"
+              },
+              "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Data\\cicekgo_Data.csproj": {
+                "projectPath": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Data\\cicekgo_Data.csproj"
+              }
+            }
+          }
+        }
+      },
+      "frameworks": {
+        "net472": {}
+      }
+    },
+    "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\cicekgo_Core.csproj": {
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\cicekgo_Core.csproj",
+        "projectName": "cicekgo_Core",
+        "projectPath": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\cicekgo_Core.csproj",
+        "UsingMicrosoftNETSdk": false,
+        "frameworks": {
+          "net472": {
+            "projectReferences": {}
+          }
+        }
+      },
+      "frameworks": {
+        "net472": {}
+      }
+    },
+    "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Data\\cicekgo_Data.csproj": {
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Data\\cicekgo_Data.csproj",
+        "projectName": "cicekgo_Data",
+        "projectPath": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Data\\cicekgo_Data.csproj",
+        "UsingMicrosoftNETSdk": false,
+        "frameworks": {
+          "net472": {
+            "projectReferences": {
+              "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\cicekgo_Core.csproj": {
+                "projectPath": "C:\\Users\\Hazar Dilbaz\\Desktop\\cicekgo\\backend\\cicekgo\\cicekgo_Core\\cicekgo_Core.csproj"
+              }
+            }
+          }
+        }
+      },
+      "frameworks": {
+        "net472": {}
+      }
+    }
+  }
+}
