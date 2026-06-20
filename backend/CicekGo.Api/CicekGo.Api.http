@@ -1,0 +1,6 @@
+@CicekGo.Api_HostAddress = http://localhost:5201
+
+GET {{CicekGo.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

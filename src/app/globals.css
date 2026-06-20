@@ -1,0 +1,295 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Rakamlar hizalı görünsün (para sütunları) */
+  body {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Mobilde her şeyi orantılı küçült (Instagram benzeri kompakt görünüm).
+     Tailwind rem tabanlı olduğu için yazı/boşluk/ikon hepsi birlikte küçülür. */
+  @media (max-width: 639px) {
+    html { font-size: 13.5px; }
+    /* iOS'ta input'a odaklanınca yakınlaşmayı (zoom) engelle */
+    input, select, textarea { font-size: 16px; }
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  /* Custom scrollbar for webkit browsers */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+}
+
+@layer components {
+  /* Custom button styles */
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-outline {
+    @apply border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  /* Card styles */
+  .card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6;
+  }
+  
+  .card-hover {
+    @apply hover:shadow-md transition-shadow duration-200;
+  }
+  
+  /* Input styles */
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200;
+  }
+  
+  /* Modal styles */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4;
+  }
+  
+  .modal-content {
+    @apply bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto;
+  }
+}
+
+/* Shimmer iskelet (skeleton) yükleyici */
+@keyframes skeleton-sweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e6ebf2 37%, #f1f5f9 63%);
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+
+/* İçerik girişi (sayfa geçişi / liste) */
+@keyframes enter-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-in {
+  animation: enter-up 0.28s cubic-bezier(0.21, 0.6, 0.35, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-in, .skeleton { animation: none; }
+}
+
+/* Animated Logo Animations */
+@keyframes drawText {
+  0% {
+    stroke-dashoffset: 120;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes drawCircle {
+  0% {
+    stroke-dashoffset: 157;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes drawK {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawG {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes closeToCircle {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(35px);
+    opacity: 0.8;
+  }
+}
+
+@keyframes drawConnection {
+  0% {
+    stroke-dashoffset: 35;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-drawText {
+  animation: drawText 0.8s ease-in-out forwards;
+}
+
+.animate-drawCircle {
+  animation: drawCircle 1.2s ease-in-out forwards;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+.animate-drawK {
+  animation: drawK 0.8s ease-in-out forwards;
+}
+
+.animate-drawG {
+  animation: drawG 1s ease-in-out forwards;
+}
+
+.animate-closeToCircle {
+  animation: closeToCircle 0.8s ease-in-out forwards;
+}
+
+.animate-drawConnection {
+  animation: drawConnection 0.8s ease-in-out forwards;
+}
+
+/* Responsive text utilities */
+  .text-responsive-sm {
+    @apply text-xs lg:text-sm;
+  }
+  
+  .text-responsive-base {
+    @apply text-sm lg:text-base;
+  }
+  
+  .text-responsive-lg {
+    @apply text-base lg:text-lg;
+  }
+  
+  .text-responsive-xl {
+    @apply text-lg lg:text-xl;
+  }
+  
+  /* Responsive spacing utilities */
+  .space-responsive {
+    @apply space-y-3 lg:space-y-4;
+  }
+  
+  .gap-responsive {
+    @apply gap-3 lg:gap-4;
+  }
+  
+  .p-responsive {
+    @apply p-3 lg:p-4;
+  }
+  
+  .px-responsive {
+    @apply px-3 lg:px-4;
+  }
+  
+  .py-responsive {
+    @apply py-2 lg:py-3;
+  }
+
