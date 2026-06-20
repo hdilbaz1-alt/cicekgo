@@ -5,7 +5,7 @@ import { canAny, P } from '@/lib/permissions';
 import {
   LayoutDashboard, ClipboardList, Truck, Users, UsersRound, BookText, Wallet,
   BarChart3, Package, UserCog, Trash2, ScrollText, Settings, ChevronRight,
-  ChevronsLeft, Tag, Ruler, Clock, ListChecks, Printer, RotateCcw, type LucideIcon,
+  ChevronsLeft, Tag, Ruler, Clock, ListChecks, Printer, RotateCcw, MapPin, type LucideIcon,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -42,6 +42,7 @@ const ITEMS: Item[] = [
       { id: 'order-status', label: 'Sipariş Durumları', icon: ListChecks },
       { id: 'print-templates', label: 'Yazdırma Şablonları', icon: Printer },
       { id: 'payment-methods', label: 'Ödeme Yöntemleri', icon: Wallet },
+      { id: 'address-settings', label: 'Varsayılan Adres', icon: MapPin },
     ],
   },
 ];

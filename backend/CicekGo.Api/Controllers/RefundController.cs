@@ -37,4 +37,10 @@ public class RefundController : ControllerBase
     [HasPermission(Permissions.FinanceCreatePayment)]
     public async Task<ActionResult<ApiResponse<RefundDto>>> Process(int id, [FromBody] RefundProcessDto dto, CancellationToken ct)
         => Ok(ApiResponse<RefundDto>.Ok(await _service.ProcessAsync(id, dto, ct), "İade işlendi."));
+
+    /// <summary>Bekleyen iadeyi "ödendi" olarak kapatır (kasa/ödeme kaydı OLUŞTURMADAN). Ödeme alacak ödemesi vb. ile yapıldıysa.</summary>
+    [HttpPost("{id:int}/resolve")]
+    [HasPermission(Permissions.FinanceCreatePayment)]
+    public async Task<ActionResult<ApiResponse<RefundDto>>> Resolve(int id, [FromBody] RefundResolveDto? dto, CancellationToken ct)
+        => Ok(ApiResponse<RefundDto>.Ok(await _service.ResolveAsync(id, dto?.Note, ct), "İade kapatıldı."));
 }

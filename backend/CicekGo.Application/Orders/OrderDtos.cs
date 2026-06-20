@@ -60,6 +60,9 @@ public class OrderCreateDto
     public string? RecipientName { get; set; }
     public string? RecipientPhone { get; set; }
     public string? RecipientAddress { get; set; }
+    public string? RecipientCity { get; set; }         // İl
+    public string? RecipientDistrict { get; set; }     // İlçe
+    public string? RecipientAddressLine { get; set; }  // Açık Adres
 
     public bool? IsNotified { get; set; }
 
@@ -98,6 +101,9 @@ public class OrderUpdateDto
     public string? RecipientName { get; set; }
     public string? RecipientPhone { get; set; }
     public string? RecipientAddress { get; set; }
+    public string? RecipientCity { get; set; }         // İl
+    public string? RecipientDistrict { get; set; }     // İlçe
+    public string? RecipientAddressLine { get; set; }  // Açık Adres
 
     public bool? IsNotified { get; set; }
 
@@ -129,6 +135,9 @@ public class OrderListItemDto
     public string? RecipientName { get; set; }
     public string? RecipientPhone { get; set; }
     public string? RecipientAddress { get; set; }
+    public string? RecipientCity { get; set; }
+    public string? RecipientDistrict { get; set; }
+    public string? RecipientAddressLine { get; set; }
 
     public decimal TotalPaid { get; set; }
     public DateTime? LastPaymentDate { get; set; }

@@ -92,7 +92,10 @@ export default function CustomerLedgerPage({ initialFilter, initialCustomerId }:
 
   const refreshSelected = useCallback(async () => {
     if (!selected) return;
-    await Promise.all([loadLedger(selected.customerId), loadRefunds(selected.customerId), loadBalances()]);
+    const [, , arr] = await Promise.all([loadLedger(selected.customerId), loadRefunds(selected.customerId), loadBalances()]);
+    // Seçili cariyi güncel bakiyeyle yenile ki butonlar (Alacağı Öde vb.) doğru görünsün
+    const upd = arr.find((x) => x.customerId === selected.customerId);
+    if (upd) setSelected(upd);
   }, [selected, loadLedger, loadRefunds, loadBalances]);
 
   const visible = useMemo(() => {
@@ -272,8 +275,13 @@ export default function CustomerLedgerPage({ initialFilter, initialCustomerId }:
                               </div>
                             </div>
                             {canPay && (
-                              <button onClick={() => setProcessRefund(r)}
-                                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold shrink-0">İade Et</button>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button onClick={() => setProcessRefund(r)}
+                                  className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold">İade Et</button>
+                                <button title="Ödeme başka yolla yapıldıysa: kasa kaydı oluşturmadan kapatır"
+                                  onClick={async () => { if (!confirm('Bu iade ödeme/kasa kaydı OLUŞTURMADAN kapatılacak. Ödeme zaten yapıldıysa onaylayın.')) return; try { await refundService.resolve(r.id); showToast('İade kapatıldı'); await refreshSelected(); } catch (e) { showToast(e instanceof Error ? e.message : 'Kapatılamadı'); } }}
+                                  className="px-3 py-1.5 rounded-xl border border-amber-300 text-amber-700 hover:bg-amber-100 text-xs font-semibold">Ödendi işaretle</button>
+                              </div>
                             )}
                           </div>
                         ))}

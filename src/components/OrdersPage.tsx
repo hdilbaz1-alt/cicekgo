@@ -26,6 +26,43 @@ const money = (n: number) => new Intl.NumberFormat('tr-TR', { style: 'currency',
 const FOCUS_PREPARE = ['Yeni', 'Onaylandı', 'Hazırlanıyor'];
 const FOCUS_ROAD = ['Kuryeye Verildi', 'Yola Çıktı'];
 
+// Dinamik kolonlar — "İşlem" kolonu bu listeye dahil DEĞİL (her zaman sabit, en sonda).
+interface ColDef { key: string; label: string }
+const ORDER_COLUMNS: ColDef[] = [
+  { key: 'code', label: 'Kod' },
+  { key: 'recipient', label: 'Alıcı' },
+  { key: 'sender', label: 'Gönderici' },
+  { key: 'delivery', label: 'Teslimat' },
+  { key: 'amount', label: 'Tutar' },
+  { key: 'status', label: 'Durum' },
+  { key: 'payment', label: 'Ödeme' },
+  { key: 'courier', label: 'Kurye' },
+];
+const DEFAULT_COL_ORDER = ORDER_COLUMNS.map((c) => c.key);
+const COL_LABEL = Object.fromEntries(ORDER_COLUMNS.map((c) => [c.key, c.label]));
+function colStorageKey(): string {
+  try { const u = JSON.parse(localStorage.getItem('user') || '{}'); return `cg_orders_cols_${u.userId ?? u.id ?? ''}`; } catch { return 'cg_orders_cols_'; }
+}
+
+// Telefonu uluslararası WhatsApp formatına çevir (TR varsayımı). Mesaj eklenmez → sadece sohbet açılır.
+function waLink(phone?: string): string | null {
+  const d = (phone || '').replace(/\D/g, '');
+  if (!d) return null;
+  let n = d;
+  if (n.startsWith('90')) { /* zaten ülke kodlu */ }
+  else if (n.startsWith('0')) n = '90' + n.slice(1);
+  else if (n.length === 10) n = '90' + n;   // 5xxxxxxxxx
+  return `https://wa.me/${n}`;
+}
+
+function WaIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M19.05 4.91A9.82 9.82 0 0 0 12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.86 9.86 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.91-7.02zM12.05 20.1h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.11.82.83-3.04-.2-.31a8.18 8.18 0 0 1-1.26-4.35c0-4.54 3.7-8.23 8.24-8.23a8.2 8.2 0 0 1 8.23 8.24c0 4.54-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.23.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.22-.17-.47-.29z" />
+    </svg>
+  );
+}
+
 export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, onCloseModal = () => {}, focus, onNavigate }:
   { onCreateOrder?: () => void; isCreateModalOpen?: boolean; onCloseModal?: () => void; focus?: string; onNavigate?: (p: string, opts?: Record<string, unknown>) => void }) {
   const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -56,6 +93,39 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
   }, [focus]);
   const [toast, setToast] = useState<string | null>(null);
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(null), 3000); };
+
+  // Dinamik kolon durumu (kullanıcı bazlı, localStorage) — "İşlem" hariç
+  const [colOrder, setColOrder] = useState<string[]>(DEFAULT_COL_ORDER);
+  const [colHidden, setColHidden] = useState<string[]>([]);
+  const [showCols, setShowCols] = useState(false);
+  const [dragCol, setDragCol] = useState<string | null>(null);
+  const [overCol, setOverCol] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(colStorageKey());
+      if (!raw) return;
+      const s = JSON.parse(raw) as { order?: string[]; hidden?: string[] };
+      const valid = (s.order || []).filter((k) => DEFAULT_COL_ORDER.includes(k));
+      const missing = DEFAULT_COL_ORDER.filter((k) => !valid.includes(k));   // yeni eklenen kolonlar sona
+      setColOrder([...valid, ...missing]);
+      setColHidden((s.hidden || []).filter((k) => DEFAULT_COL_ORDER.includes(k)));
+    } catch { /* yoksay */ }
+  }, []);
+
+  const persistCols = (order: string[], hidden: string[]) => {
+    try { localStorage.setItem(colStorageKey(), JSON.stringify({ order, hidden })); } catch { /* yoksay */ }
+  };
+  const visibleCols = useMemo(() => colOrder.filter((k) => !colHidden.includes(k)), [colOrder, colHidden]);
+  const toggleCol = (key: string) => setColHidden((prev) => { const next = prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]; persistCols(colOrder, next); return next; });
+  const resetCols = () => { setColOrder(DEFAULT_COL_ORDER); setColHidden([]); persistCols(DEFAULT_COL_ORDER, []); };
+  const onColDrop = (target: string) => {
+    if (!dragCol || dragCol === target) { setDragCol(null); setOverCol(null); return; }
+    const next = [...colOrder];
+    const from = next.indexOf(dragCol), to = next.indexOf(target);
+    next.splice(from, 1); next.splice(to, 0, dragCol);
+    setColOrder(next); persistCols(next, colHidden); setDragCol(null); setOverCol(null);
+  };
 
   useEffect(() => { if (isCreateModalOpen) setCreateOpen(true); }, [isCreateModalOpen]);
 
@@ -111,6 +181,28 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
 
   const fmtDeliv = (s: string) => { try { return new Date(s).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch { return s; } };
 
+  // Dinamik kolon hücre içeriği
+  const renderCell = (o: OrderItem, key: string) => {
+    switch (key) {
+      case 'code': return <span className="font-mono text-xs text-slate-700">{o.orderCode}</span>;
+      case 'recipient': return (<><div className="font-medium text-slate-800">{o.recipientName || '-'}</div><div className="text-xs text-slate-400">{o.recipientPhone}</div></>);
+      case 'sender': return (<><div className="font-medium text-slate-700">{o.senderName || '-'}</div>{o.senderPhone && <div className="text-xs text-slate-400">{o.senderPhone}</div>}</>);
+      case 'delivery': return <span className="text-slate-600">{o.deliveryDate ? fmtDeliv(o.deliveryDate) : '-'}</span>;
+      case 'amount': return (<><div className="font-semibold text-slate-800">{money(o.orderAmount)}</div>{o.orderRemainingAmount > 0 && <div className="text-xs text-orange-500">Kalan: {money(o.orderRemainingAmount)}</div>}</>);
+      case 'status': return <StatusBadge status={o.orderStatus} />;
+      case 'payment': return <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${payColor(o.paymentStatus)}`}>{o.paymentStatus || '—'}</span>;
+      case 'courier': return o.assignedCourierName
+        ? <span className="inline-flex items-center gap-1.5 text-xs"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />{o.assignedCourierName}</span>
+        : <span className="text-xs text-slate-300">—</span>;
+      default: return null;
+    }
+  };
+  // WhatsApp sohbeti aç (mesaj göndermeden). wa.me: uygulama varsa app, yoksa WhatsApp Web / mobil app.
+  const openWhatsApp = (phone?: string) => {
+    const u = waLink(phone);
+    if (u) window.open(u, '_blank', 'noopener');
+  };
+
 
   return (
     <div className="min-h-full bg-gradient-to-b from-slate-50 to-white">
@@ -161,6 +253,33 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
                 className="w-full pl-4 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <button onClick={() => setShowFilter((v) => !v)} className={`px-4 py-2.5 rounded-2xl text-sm font-medium border ${hasFilter || showFilter ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}`}>Filtre{hasFilter ? ' •' : ''}</button>
+            <div className="relative hidden lg:block">
+              <button onClick={() => setShowCols((v) => !v)} className={`px-4 py-2.5 rounded-2xl text-sm font-medium border ${showCols ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}`}>Kolonlar</button>
+              {showCols && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowCols(false)} />
+                  <div className="absolute right-0 mt-2 z-50 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl p-2">
+                    <div className="px-2 py-1.5 text-[11px] font-medium text-slate-400">Sürükleyerek sırala · göster/gizle</div>
+                    {colOrder.map((key) => (
+                      <div key={key} draggable
+                        onDragStart={() => setDragCol(key)}
+                        onDragOver={(e) => { e.preventDefault(); setOverCol(key); }}
+                        onDragLeave={() => setOverCol((c) => (c === key ? null : c))}
+                        onDrop={() => onColDrop(key)}
+                        onDragEnd={() => { setDragCol(null); setOverCol(null); }}
+                        className={`flex items-center gap-2 px-2 py-2 rounded-xl cursor-move select-none ${dragCol === key ? 'opacity-40' : ''} ${overCol === key ? 'ring-2 ring-indigo-200 bg-indigo-50/50' : 'hover:bg-slate-50'}`}>
+                        <span className="text-slate-300">⋮⋮</span>
+                        <label className="flex items-center gap-2 flex-1 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                          <input type="checkbox" checked={!colHidden.includes(key)} onChange={() => toggleCol(key)} className="w-4 h-4 rounded accent-indigo-600" />
+                          <span className="text-sm text-slate-700">{COL_LABEL[key]}</span>
+                        </label>
+                      </div>
+                    ))}
+                    <button onClick={resetCols} className="w-full mt-1 px-2 py-2 rounded-xl text-sm text-indigo-600 hover:bg-indigo-50 font-medium">Varsayılana dön</button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
           {showFilter && (
             <div className="bg-white border border-slate-200 rounded-2xl p-3 flex flex-wrap gap-3">
@@ -217,39 +336,18 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
                 <table className="w-full text-sm">
                   <thead className="bg-slate-50 text-slate-500 text-left">
                     <tr>
-                      <th className="px-4 py-3 font-medium">Kod</th>
-                      <th className="px-4 py-3 font-medium">Alıcı</th>
-                      <th className="px-4 py-3 font-medium">Teslimat</th>
-                      <th className="px-4 py-3 font-medium">Tutar</th>
-                      <th className="px-4 py-3 font-medium">Durum</th>
-                      <th className="px-4 py-3 font-medium">Ödeme</th>
-                      <th className="px-4 py-3 font-medium">Kurye</th>
+                      {visibleCols.map((key) => <th key={key} className="px-4 py-3 font-medium">{COL_LABEL[key]}</th>)}
                       <th className="px-4 py-3 font-medium text-right">İşlem</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {filtered.map((o) => (
-                      <tr key={o.orderPkId} className="hover:bg-slate-50"
+                      <tr key={o.orderPkId} className={o.customerId ? 'bg-indigo-50 hover:bg-indigo-100/70' : 'hover:bg-slate-50'}
                         onContextMenu={(e) => { e.preventDefault(); setMenu({ x: e.clientX, y: e.clientY, order: o }); }}>
-                        <td className="px-4 py-3 font-mono text-xs text-slate-700">{o.orderCode}</td>
-                        <td className="px-4 py-3">
-                          <div className="font-medium text-slate-800">{o.recipientName || '-'}</div>
-                          <div className="text-xs text-slate-400">{o.recipientPhone}</div>
-                        </td>
-                        <td className="px-4 py-3 text-slate-600">{o.deliveryDate ? fmtDeliv(o.deliveryDate) : '-'}</td>
-                        <td className="px-4 py-3">
-                          <div className="font-semibold text-slate-800">{money(o.orderAmount)}</div>
-                          {o.orderRemainingAmount > 0 && <div className="text-xs text-orange-500">Kalan: {money(o.orderRemainingAmount)}</div>}
-                        </td>
-                        <td className="px-4 py-3"><StatusBadge status={o.orderStatus} /></td>
-                        <td className="px-4 py-3"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${payColor(o.paymentStatus)}`}>{o.paymentStatus || '—'}</span></td>
-                        <td className="px-4 py-3 text-slate-600">
-                          {o.assignedCourierName
-                            ? <span className="inline-flex items-center gap-1.5 text-xs"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />{o.assignedCourierName}</span>
-                            : <span className="text-xs text-slate-300">—</span>}
-                        </td>
+                        {visibleCols.map((key) => <td key={key} className="px-4 py-3">{renderCell(o, key)}</td>)}
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-end gap-1">
+                            {o.recipientPhone && <button title="WhatsApp ile sohbet" onClick={() => openWhatsApp(o.recipientPhone)} className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-50"><WaIcon className="w-[18px] h-[18px]" /></button>}
                             <Act title="Yazdır" onClick={() => setPrintOrder(o)} cls="text-indigo-600 hover:bg-indigo-50" Icon={Printer} />
                             <Act title="Detay" onClick={() => setDetailOrder(o)} cls="text-slate-500 hover:bg-slate-100" Icon={Eye} />
                             {can(P.ordersChangeStatus) && <Act title="Durum" onClick={() => setStatusOrder(o)} cls="text-amber-600 hover:bg-amber-50" Icon={CheckCircle2} />}
@@ -267,7 +365,7 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
             {/* Mobil kartlar */}
             <div className="lg:hidden space-y-3">
               {filtered.map((o) => (
-                <div key={o.orderPkId} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3.5" onClick={() => setDetailOrder(o)}
+                <div key={o.orderPkId} className={`rounded-2xl border shadow-sm p-3.5 ${o.customerId ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-100'}`} onClick={() => setDetailOrder(o)}
                   onContextMenu={(e) => { e.preventDefault(); setMenu({ x: e.clientX, y: e.clientY, order: o }); }}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
@@ -281,6 +379,11 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
                     {o.deliveryDate && <span className="inline-flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{fmtDeliv(o.deliveryDate)}</span>}
                     {o.assignedCourierName && <span className="inline-flex items-center gap-1 text-indigo-600"><MapPin className="w-3.5 h-3.5" />{o.assignedCourierName}</span>}
                   </div>
+                  {o.senderName && (
+                    <div className={`mt-1.5 text-[12px] ${o.customerId ? 'text-indigo-700 font-medium' : 'text-slate-500'}`}>
+                      Gönderici: {o.senderName}{o.customerId ? ' · cari' : ''}
+                    </div>
+                  )}
                   <div className="mt-2.5 flex items-center justify-between">
                     <div>
                       <span className="font-bold text-slate-900">{money(o.orderAmount)}</span>
@@ -289,6 +392,7 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
                     <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${payColor(o.paymentStatus)}`}>{o.paymentStatus || '—'}</span>
                   </div>
                   <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                    {o.recipientPhone && <button title="WhatsApp" onClick={() => openWhatsApp(o.recipientPhone)} className="p-2 rounded-xl text-emerald-600 bg-emerald-50"><WaIcon className="w-[18px] h-[18px]" /></button>}
                     <Act title="Yazdır" onClick={() => setPrintOrder(o)} cls="text-indigo-600 bg-indigo-50" Icon={Printer} />
                     <Act title="Detay" onClick={() => setDetailOrder(o)} cls="text-slate-500 bg-slate-50" Icon={Eye} />
                     {can(P.ordersChangeStatus) && <Act title="Durum" onClick={() => setStatusOrder(o)} cls="text-amber-600 bg-amber-50" Icon={CheckCircle2} />}

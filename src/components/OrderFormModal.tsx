@@ -12,6 +12,10 @@ import { PaymentMethodDto } from '@/services/paymentMethodService';
 import { getApiUrl, getEndpoint } from '@/config/api';
 import { can, P } from '@/lib/permissions';
 import { useEscClose } from '@/lib/useEscClose';
+import { locationService, Province, District } from '@/services/locationService';
+import { formatFullAddress } from '@/lib/address';
+import GoogleMapPickerModal from './GoogleMapPickerModal';
+import { MapPin } from 'lucide-react';
 
 function todayStr() {
   const d = new Date();
@@ -19,6 +23,16 @@ function todayStr() {
 }
 
 const SOURCES = ['Telefon', 'WhatsApp', 'Instagram', 'Web Sitesi', 'Mağaza', 'Trendyol', 'Diğer'];
+
+interface DefaultAddress { provinceName?: string; districtName?: string }
+function readDefaultAddress(): DefaultAddress | null {
+  try {
+    const u = JSON.parse(localStorage.getItem('user') || '{}');
+    const raw = localStorage.getItem(`cg_default_address_${u.userId ?? u.id ?? ''}`);
+    return raw ? (JSON.parse(raw) as DefaultAddress) : null;
+  } catch { return null; }
+}
+const eqTr = (a: string, b: string) => a.toLocaleLowerCase('tr-TR') === b.toLocaleLowerCase('tr-TR');
 const money = (n: number) => `${(n || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺`;
 const inputCls = 'w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm';
 const lbl = 'text-xs font-medium text-slate-600';
@@ -41,7 +55,15 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
   const [senderPhone, setSenderPhone] = useState('');
   const [recipientName, setRecipientName] = useState('');
   const [recipientPhone, setRecipientPhone] = useState('');
-  const [recipientAddress, setRecipientAddress] = useState('');
+  // Yapısal teslimat adresi
+  const [provinces, setProvinces] = useState<Province[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [provinceId, setProvinceId] = useState<number | ''>('');
+  const [districtId, setDistrictId] = useState<number | ''>('');
+  const [pendingProvinceName, setPendingProvinceName] = useState<string | null>(null);
+  const [pendingDistrictName, setPendingDistrictName] = useState<string | null>(null);
+  const [addressLine, setAddressLine] = useState('');
+  const [showMap, setShowMap] = useState(false);
   const [deliveryDate, setDeliveryDate] = useState(todayStr());
   const [deliveryTimeRange, setDeliveryTimeRange] = useState('');
   const [slots, setSlots] = useState<string[]>([]);
@@ -74,7 +96,12 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
 
   const resetForm = useCallback(() => {
     setItems([]); setCustomerId(undefined); setSaveAsNew(false); setSenderName(''); setSenderPhone('');
-    setRecipientName(''); setRecipientPhone(''); setRecipientAddress('');
+    setRecipientName(''); setRecipientPhone('');
+    setProvinceId(''); setDistrictId(''); setDistricts([]); setAddressLine('');
+    // Varsayılan adres (kullanıcı bazlı, localStorage) → İl (ve varsa İlçe) ön-dolu gelir
+    const def = readDefaultAddress();
+    setPendingProvinceName(def?.provinceName || null);
+    setPendingDistrictName(def?.districtName || null);
     setDeliveryDate(todayStr()); setDeliveryTimeRange(''); setSource('Telefon'); setStatus('Yeni');
     setDiscountTotal('0'); setDeliveryFee('0'); setExtraFee('0');
     setCardNote(''); setCustomerNote(''); setExtraNote(''); setDeliveryNote('');
@@ -130,7 +157,11 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
           setCustomerLabel(d.customerId ? (d.senderName || '') : '');
           setSenderName(d.senderName || ''); setSenderPhone(d.senderPhone || '');
           setRecipientName(d.recipientName || ''); setRecipientPhone(d.recipientPhone || '');
-          setRecipientAddress(d.recipientAddress || '');
+          // Yapısal adres varsa onu çöz; yoksa legacy serbest adresi Açık Adres'e koy
+          setProvinceId(''); setDistrictId(''); setDistricts([]);
+          setPendingProvinceName(d.recipientCity || null);
+          setPendingDistrictName(d.recipientDistrict || null);
+          setAddressLine(d.recipientAddressLine || (d.recipientCity ? '' : (d.recipientAddress || '')));
           setDeliveryDate(d.deliveryDate ? d.deliveryDate.slice(0, 10) : todayStr());
           setDeliveryTimeRange(d.deliveryTimeRange || ''); setSource(d.source || 'Telefon');
           setStatus(d.orderStatus || 'Yeni');
@@ -145,6 +176,29 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
       resetForm();
     }
   }, [isOpen, order, resetForm]);
+
+  // İl/İlçe yükleme + bekleyen isim çözümleme (prefill/edit/harita için)
+  useEffect(() => { if (isOpen) locationService.getProvinces().then(setProvinces).catch(() => { }); }, [isOpen]);
+  useEffect(() => {
+    if (!pendingProvinceName || provinces.length === 0) return;
+    const p = provinces.find((x) => eqTr(x.name, pendingProvinceName));
+    if (p) setProvinceId(p.id);
+    setPendingProvinceName(null);
+  }, [provinces, pendingProvinceName]);
+  useEffect(() => {
+    if (provinceId === '') { setDistricts([]); return; }
+    locationService.getDistricts(Number(provinceId)).then(setDistricts).catch(() => setDistricts([]));
+  }, [provinceId]);
+  useEffect(() => {
+    if (!pendingDistrictName || districts.length === 0) return;
+    const d = districts.find((x) => eqTr(x.name, pendingDistrictName));
+    if (d) setDistrictId(d.id);
+    setPendingDistrictName(null);
+  }, [districts, pendingDistrictName]);
+
+  const provinceName = useMemo(() => provinces.find((p) => p.id === provinceId)?.name || '', [provinces, provinceId]);
+  const districtName = useMemo(() => districts.find((d) => d.id === districtId)?.name || '', [districts, districtId]);
+  const addressPreview = useMemo(() => formatFullAddress(addressLine, districtName, provinceName), [addressLine, districtName, provinceName]);
 
   const addProductLine = (pid: number) => {
     const p = products.find((x) => x.id === pid);
@@ -177,6 +231,8 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
     if (items.length === 0) return setErr('En az bir ürün kalemi ekleyin.');
     if (items.some((i) => !i.productName.trim())) return setErr('Tüm kalemlerde ürün adı olmalı.');
     if (!recipientName.trim()) return setErr('Alıcı adı gerekli.');
+    if (provinceId === '') return setErr('Teslimat için İl seçin.');
+    if (districtId === '') return setErr('Teslimat için İlçe seçin.');
     if (!isEdit && (Number(paidAmount) || 0) > 0 && !methodId) return setErr('Ödeme yöntemi seçin.');
     if (isEdit && (Number(extraPaid) || 0) > 0 && !methodId) return setErr('Ödeme yöntemi seçin.');
     setBusy(true);
@@ -194,7 +250,9 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
       orderSender: senderName, orderTo: recipientName,
       orderDeliveryDate: deliveryIso,
       orderProductType: items[0]?.productName || '',
-      customerId: cid, senderName, senderPhone, recipientName, recipientPhone, recipientAddress,
+      customerId: cid, senderName, senderPhone, recipientName, recipientPhone,
+      recipientCity: provinceName, recipientDistrict: districtName, recipientAddressLine: addressLine,
+      recipientAddress: addressPreview,
       extraNote, cardNote, customerNote, deliveryNote, isNotified,
       source, deliveryTimeRange,
       discountTotal: Math.round(totals.discAmt * 100) / 100, deliveryFee: Number(deliveryFee) || 0, extraFee: Number(extraFee) || 0,
@@ -267,7 +325,37 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
             )}
             <div><div className="flex items-center justify-between"><label className={lbl}>Alıcı Ad *</label><CopyButton value={recipientName} /></div><input className={inputCls + ' mt-1'} value={recipientName} onChange={(e) => setRecipientName(e.target.value)} /></div>
             <div><div className="flex items-center justify-between"><label className={lbl}>Alıcı Tel</label><CopyButton value={recipientPhone} /></div><input type="tel" inputMode="numeric" maxLength={11} placeholder="05531234567" className={inputCls + ' mt-1'} value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value.replace(/\D/g, '').slice(0, 11))} /></div>
-            <div className="sm:col-span-2"><div className="flex items-center justify-between"><label className={lbl}>Teslimat Adresi</label><CopyButton value={recipientAddress} /></div><textarea className={inputCls + ' mt-1'} rows={2} value={recipientAddress} onChange={(e) => setRecipientAddress(e.target.value)} /></div>
+            {/* Teslimat Adresi: İl / İlçe (zorunlu) + Açık Adres + harita */}
+            <div className="sm:col-span-2">
+              <div className="flex items-center justify-between">
+                <label className={lbl}>Teslimat Adresi *</label>
+                <button type="button" onClick={() => setShowMap(true)}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700">
+                  <MapPin className="w-3.5 h-3.5" /> Konum / Haritadan Seç
+                </button>
+              </div>
+              <div className="mt-1 grid sm:grid-cols-2 gap-2">
+                <select className={inputCls} value={provinceId}
+                  onChange={(e) => { const v = e.target.value === '' ? '' : Number(e.target.value); setProvinceId(v); setDistrictId(''); setPendingDistrictName(null); }}>
+                  <option value="">İl seçin</option>
+                  {provinces.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+                <select className={inputCls} value={districtId} disabled={provinceId === ''}
+                  onChange={(e) => setDistrictId(e.target.value === '' ? '' : Number(e.target.value))}>
+                  <option value="">{provinceId === '' ? 'Önce il seçin' : 'İlçe seçin'}</option>
+                  {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+              </div>
+              <textarea className={inputCls + ' mt-2'} rows={2} value={addressLine}
+                onChange={(e) => setAddressLine(e.target.value)}
+                placeholder="Açık adres (mahalle, sokak, site, bina/kapı no…)" />
+              {addressPreview && (
+                <div className="mt-2 flex items-start gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                  <span className="text-[10px] font-medium text-slate-400 mt-0.5 shrink-0">ÖNİZLEME</span>
+                  <span className="text-xs text-slate-700 leading-snug">{addressPreview}</span>
+                </div>
+              )}
+            </div>
           </section>
 
           {/* Teslimat */}
@@ -441,6 +529,17 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
       </div>
 
       {showPicker && <CustomerPickerModal onClose={() => setShowPicker(false)} onPick={pickCustomer} />}
+      {showMap && (
+        <GoogleMapPickerModal
+          onClose={() => setShowMap(false)}
+          onPick={({ provinceName: pn, districtName: dn, addressLine: al }) => {
+            if (al) setAddressLine(al);
+            // İl/İlçe'yi isimle çöz (cascading effect'ler id'leri ayarlar)
+            if (pn) { setProvinceId(''); setDistrictId(''); setDistricts([]); setPendingProvinceName(pn); setPendingDistrictName(dn || null); }
+            setShowMap(false);
+          }}
+        />
+      )}
     </div>
   );
 }

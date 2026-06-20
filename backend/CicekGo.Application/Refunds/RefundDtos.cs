@@ -30,6 +30,11 @@ public class RefundProcessDto
     public int? PaymentMethodId { get; set; }
 }
 
+public class RefundResolveDto
+{
+    public string? Note { get; set; }
+}
+
 public class RefundSummaryDto
 {
     public int PendingCount { get; set; }
@@ -41,5 +46,7 @@ public interface IRefundService
     Task<IReadOnlyList<RefundDto>> ListAsync(int? customerId, bool onlyOpen, CancellationToken ct = default);
     Task<IReadOnlyList<RefundDto>> SearchAsync(string? query, bool nonCariOnly, bool onlyOpen, CancellationToken ct = default);
     Task<RefundDto> ProcessAsync(int refundId, RefundProcessDto dto, CancellationToken ct = default);
+    /// <summary>Bekleyen iadeyi ödeme/kasa kaydı OLUŞTURMADAN kapatır (ödeme başka yolla yapıldıysa). Çift ödemeyi önler.</summary>
+    Task<RefundDto> ResolveAsync(int refundId, string? note, CancellationToken ct = default);
     Task<RefundSummaryDto> GetSummaryAsync(CancellationToken ct = default);
 }

@@ -88,65 +88,78 @@ export default function SuperAdminPanel({ onLogout }: { onLogout: () => void }) 
   }, [tenants]);
 
   const me = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : {};
+  const [section, setSection] = useState<'tenants' | 'settings'>('tenants');
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7] text-gray-900">
-      {/* Üst bar */}
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-white/70 border-b border-black/5">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-lg">Ç</div>
-            <div>
-              <div className="font-semibold leading-tight">ÇiçekGo · Platform</div>
-              <div className="text-xs text-gray-500 leading-tight">Süper Yönetici Paneli</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-500 hidden sm:block">{me.userName}</span>
-            <button onClick={onLogout} className="text-sm font-medium text-gray-600 hover:text-red-500 transition-colors">Çıkış</button>
+    <div className="min-h-screen bg-[#f5f5f7] text-gray-900 flex">
+      {/* Sol menü */}
+      <aside className="w-16 sm:w-60 shrink-0 bg-white border-r border-black/5 flex flex-col sticky top-0 h-screen">
+        <div className="h-16 px-3 sm:px-5 flex items-center gap-3 border-b border-black/5">
+          <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-lg shrink-0">Ç</div>
+          <div className="hidden sm:block min-w-0">
+            <div className="font-semibold leading-tight truncate">ÇiçekGo · Platform</div>
+            <div className="text-xs text-gray-500 leading-tight">Süper Yönetici</div>
           </div>
         </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-6 py-10">
-        {/* Başlık + aksiyon */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Firmalar</h1>
-            <p className="text-gray-500 mt-1">Müşteri firmalarını oluştur, yönet ve yetkilendir.</p>
-          </div>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-5 py-3 rounded-2xl font-semibold shadow-lg shadow-blue-600/20 transition-all"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            Yeni Firma
+        <nav className="flex-1 p-2 sm:p-3 space-y-1">
+          <NavItem active={section === 'tenants'} onClick={() => setSection('tenants')} label="Firmalar"
+            icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-4h6v4" />} />
+          <NavItem active={section === 'settings'} onClick={() => setSection('settings')} label="Ayarlar"
+            icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z" />} />
+        </nav>
+        <div className="p-2 sm:p-3 border-t border-black/5">
+          <div className="hidden sm:block px-2 pb-1.5 text-xs text-gray-400 truncate">{me.userName}</div>
+          <button onClick={onLogout} className="w-full flex items-center justify-center sm:justify-start gap-2 px-2 py-2 rounded-xl text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-500 transition-colors">
+            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+            <span className="hidden sm:inline">Çıkış</span>
           </button>
         </div>
+      </aside>
 
-        {/* İstatistik kartları */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <StatCard label="Toplam Firma" value={stats.total} accent="from-blue-500 to-indigo-600" />
-          <StatCard label="Aktif" value={stats.active} accent="from-emerald-500 to-teal-600" />
-          <StatCard label="Süresi Yaklaşan" value={stats.expiring} accent="from-amber-500 to-orange-600" />
-        </div>
+      {/* İçerik */}
+      <div className="flex-1 min-w-0">
+        <main className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-10">
+          {section === 'tenants' ? (
+            <>
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+                <div>
+                  <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Firmalar</h1>
+                  <p className="text-gray-500 mt-1">Müşteri firmalarını oluştur, yönet ve yetkilendir.</p>
+                </div>
+                <button onClick={() => setShowCreate(true)}
+                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-5 py-3 rounded-2xl font-semibold shadow-lg shadow-blue-600/20 transition-all">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                  Yeni Firma
+                </button>
+              </div>
 
-        {error && <div className="mb-6 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 text-sm">{error}</div>}
+              <div className="grid grid-cols-3 gap-4 mb-8">
+                <StatCard label="Toplam Firma" value={stats.total} accent="from-blue-500 to-indigo-600" />
+                <StatCard label="Aktif" value={stats.active} accent="from-emerald-500 to-teal-600" />
+                <StatCard label="Süresi Yaklaşan" value={stats.expiring} accent="from-amber-500 to-orange-600" />
+              </div>
 
-        {loading ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[0, 1, 2].map((i) => <div key={i} className="h-44 rounded-3xl bg-white/60 animate-pulse" />)}
-          </div>
-        ) : tenants.length === 0 ? (
-          <EmptyState onCreate={() => setShowCreate(true)} />
-        ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {tenants.map((t) => (
-              <TenantCard key={t.id} t={t} onEdit={() => setEditing(t)} onUsers={() => setManaging(t)} />
-            ))}
-          </div>
-        )}
-      </main>
+              {error && <div className="mb-6 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 text-sm">{error}</div>}
+
+              {loading ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {[0, 1, 2].map((i) => <div key={i} className="h-44 rounded-3xl bg-white/60 animate-pulse" />)}
+                </div>
+              ) : tenants.length === 0 ? (
+                <EmptyState onCreate={() => setShowCreate(true)} />
+              ) : (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {tenants.map((t) => (
+                    <TenantCard key={t.id} t={t} onEdit={() => setEditing(t)} onUsers={() => setManaging(t)} />
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <PlatformSettingsSection onToast={showToast} />
+          )}
+        </main>
+      </div>
 
       {showCreate && (
         <CreateTenantWizard
@@ -194,6 +207,62 @@ function StatCard({ label, value, accent }: { label: string; value: number; acce
       <div className="text-3xl font-bold tracking-tight">{value}</div>
       <div className="text-sm text-gray-500">{label}</div>
     </div>
+  );
+}
+
+function NavItem({ active, onClick, label, icon }: { active: boolean; onClick: () => void; label: string; icon: React.ReactNode }) {
+  return (
+    <button onClick={onClick} title={label}
+      className={`w-full flex items-center justify-center sm:justify-start gap-3 px-2 sm:px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${active ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}>
+      <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">{icon}</svg>
+      <span className="hidden sm:inline">{label}</span>
+    </button>
+  );
+}
+
+/* ---- Ayarlar: Platform geneli Google Maps anahtarı ---- */
+function PlatformSettingsSection({ onToast }: { onToast: (m: string, ok?: boolean) => void }) {
+  const [key, setKey] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try { const s = await adminService.getPlatformSettings(); setKey(s.googleMapsApiKey || ''); }
+      catch (e) { onToast(e instanceof Error ? e.message : 'Ayarlar yüklenemedi', false); }
+      finally { setLoading(false); }
+    })();
+  }, [onToast]);
+
+  const save = async () => {
+    setBusy(true);
+    try { await adminService.savePlatformSettings(key.trim() || null); onToast('Google Maps anahtarı kaydedildi'); }
+    catch (e) { onToast(e instanceof Error ? e.message : 'Kaydedilemedi', false); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <>
+      <div className="mb-8">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Ayarlar</h1>
+        <p className="text-gray-500 mt-1">Platform geneli yapılandırma — tüm firmalar için ortak.</p>
+      </div>
+
+      <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-sm border border-black/5 max-w-xl">
+        <h3 className="font-semibold text-lg mb-1">Google Maps API Anahtarı</h3>
+        <p className="text-sm text-gray-500 mb-4">Sipariş formundaki “Haritadan Seç” özelliği için. Maps JavaScript API + Places + Geocoding etkin, referrer-kısıtlı bir tarayıcı anahtarı kullanın. Bu anahtar tüm firmalar tarafından kullanılır.</p>
+        {loading ? (
+          <div className="h-12 rounded-2xl bg-gray-100 animate-pulse" />
+        ) : (
+          <>
+            <input className={inputCls} value={key} onChange={(e) => setKey(e.target.value)} placeholder="AIza…" />
+            <button onClick={save} disabled={busy} className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-2xl font-semibold disabled:opacity-50 transition-colors">
+              {busy ? 'Kaydediliyor…' : 'Kaydet'}
+            </button>
+          </>
+        )}
+      </div>
+    </>
   );
 }
 

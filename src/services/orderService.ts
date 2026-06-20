@@ -23,6 +23,9 @@ export interface OrderItem {
   recipientName: string;
   recipientPhone: string;
   recipientAddress: string;
+  recipientCity?: string | null;
+  recipientDistrict?: string | null;
+  recipientAddressLine?: string | null;
   totalPaid: number;
   lastPaymentDate: string | null;
   orderAmount: number;

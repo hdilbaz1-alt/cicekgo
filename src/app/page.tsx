@@ -24,6 +24,7 @@ import CourierPanelPage from '@/components/CourierPanelPage';
 import AuditLogPage from '@/components/AuditLogPage';
 import PrintTemplatesPage from '@/components/PrintTemplatesPage';
 import PaymentMethodsPage from '@/components/PaymentMethodsPage';
+import AddressSettingsPage from '@/components/AddressSettingsPage';
 import NonCariPage from '@/components/NonCariPage';
 import CommandPalette from '@/components/CommandPalette';
 import SuperAdminPanel from '@/components/SuperAdminPanel';
@@ -37,6 +38,7 @@ const PAGE_TITLES: Record<string, string> = {
   'deleted-orders': 'Silinen Siparişler', 'audit-log': 'İşlem Kayıtları', 'order-codes': 'Sipariş Kodları',
   units: 'Birim Ayarları', 'store-hours': 'Çalışma Saatleri', 'order-status': 'Sipariş Durumları',
   'print-templates': 'Yazdırma Şablonları', 'payment-methods': 'Ödeme Yöntemleri',
+  'address-settings': 'Varsayılan Adres',
 };
 
 export default function HomePage() {
@@ -156,6 +158,8 @@ export default function HomePage() {
         return <StoreHoursPage />;
       case 'payment-methods':
         return <PaymentMethodsPage />;
+      case 'address-settings':
+        return <AddressSettingsPage />;
       default:
         return (
           <div className="p-6">

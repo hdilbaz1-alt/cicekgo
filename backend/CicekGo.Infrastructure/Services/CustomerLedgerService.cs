@@ -131,8 +131,36 @@ public class CustomerLedgerService : ICustomerLedgerService
         }, ct);
 
         AddCashOut("REFUND", dto.Amount, dto.CustomerId, string.IsNullOrWhiteSpace(dto.Description) ? "Müşteri alacak iadesi" : dto.Description!.Trim(), await PmNameAsync(dto.PaymentMethodId, ct));
+
+        // Alacak ödenince bu müşterinin bekleyen iadelerini de kapat (ledger/kasa zaten yukarıda işlendi; burada
+        // yalnız Refund kayıtlarının durumu güncellenir, çift kayıt oluşturulmaz).
+        await SettleOpenRefundsAsync(dto.CustomerId, dto.Amount, ct);
+
         await _db.SaveChangesAsync(ct);
         return entry.Id;
+    }
+
+    /// <summary>Müşterinin açık (PENDING/PARTIAL) iadelerini verilen tutar kadar (eskiden yeniye) kapatır. Ek ledger/kasa kaydı OLUŞTURMAZ.</summary>
+    private async Task SettleOpenRefundsAsync(int customerId, decimal amount, CancellationToken ct)
+    {
+        if (amount <= 0) return;
+        var open = await _db.Refunds
+            .Where(r => r.CustomerId == customerId && (r.Status == "PENDING" || r.Status == "PARTIAL"))
+            .OrderBy(r => r.CreatedAt).ThenBy(r => r.Id)
+            .ToListAsync(ct);
+
+        var left = amount;
+        foreach (var r in open)
+        {
+            if (left <= 0.001m) break;
+            var need = Math.Max(0m, r.Amount - r.RefundedAmount);
+            if (need <= 0) continue;
+            var apply = Math.Min(need, left);
+            r.RefundedAmount += apply;
+            left -= apply;
+            if (r.RefundedAmount >= r.Amount - 0.001m) { r.Status = "DONE"; r.CompletedAt = DateTime.UtcNow; }
+            else r.Status = "PARTIAL";
+        }
     }
 
     private void AddCashOut(string type, decimal amount, int? customerId, string? desc, string? method = null)
@@ -173,6 +201,9 @@ public class CustomerLedgerService : ICustomerLedgerService
             throw new AppException("Ödeme tutarı kalan tutardan fazla olamaz");
 
         order.RemainingAmount = newRemaining;
+        // Kalan kalmadıysa "Ödendi"ye geç (kısmi/ödenmedi otomatik güncellenir)
+        order.PaymentStatus = newRemaining <= 0.001m ? "Ödendi"
+            : (order.Amount - newRemaining) > 0.001m ? "Kısmi" : "Ödenmedi";
         order.UpdatedAt = DateTime.UtcNow;
         order.UpdatedBy = User;
 

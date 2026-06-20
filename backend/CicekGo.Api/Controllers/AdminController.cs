@@ -2,6 +2,7 @@ using CicekGo.Api.Authorization;
 using CicekGo.Application.Abstractions;
 using CicekGo.Application.Admin;
 using CicekGo.Application.Common;
+using CicekGo.Application.Platform;
 using CicekGo.Domain.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,13 +17,27 @@ public class AdminController : ControllerBase
     private readonly ITenantAdminService _tenants;
     private readonly IUserAdminService _users;
     private readonly ICurrentUser _current;
+    private readonly IPlatformSettingsService _platform;
 
-    public AdminController(ITenantAdminService tenants, IUserAdminService users, ICurrentUser current)
+    public AdminController(ITenantAdminService tenants, IUserAdminService users, ICurrentUser current, IPlatformSettingsService platform)
     {
         _tenants = tenants;
         _users = users;
         _current = current;
+        _platform = platform;
     }
+
+    // ===== Platform geneli ayarlar (Google Maps API anahtarı) — yalnız platform yöneticisi =====
+
+    [HttpGet("platform-settings")]
+    [HasPermission(Permissions.TenantsManage)]
+    public async Task<ActionResult<ApiResponse<PlatformSettingsDto>>> GetPlatformSettings(CancellationToken ct)
+        => Ok(ApiResponse<PlatformSettingsDto>.Ok(await _platform.GetAsync(ct)));
+
+    [HttpPut("platform-settings")]
+    [HasPermission(Permissions.TenantsManage)]
+    public async Task<ActionResult<ApiResponse<PlatformSettingsDto>>> UpdatePlatformSettings([FromBody] PlatformSettingsDto dto, CancellationToken ct)
+        => Ok(ApiResponse<PlatformSettingsDto>.Ok(await _platform.UpdateAsync(dto, ct), "Platform ayarları güncellendi."));
 
     // ===== Platform: firma + DB yönetimi (TenantsManage) =====
 

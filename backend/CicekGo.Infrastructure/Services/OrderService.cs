@@ -68,7 +68,12 @@ public class OrderService : IOrderService
             SenderPhone = dto.SenderPhone,
             RecipientName = dto.RecipientName ?? dto.OrderTo,
             RecipientPhone = dto.RecipientPhone,
-            RecipientAddress = dto.RecipientAddress,
+            RecipientCity = dto.RecipientCity,
+            RecipientDistrict = dto.RecipientDistrict,
+            RecipientAddressLine = dto.RecipientAddressLine,
+            RecipientAddress = AddressFormatter.HasStructured(dto.RecipientAddressLine, dto.RecipientDistrict, dto.RecipientCity)
+                ? AddressFormatter.FormatFull(dto.RecipientAddressLine, dto.RecipientDistrict, dto.RecipientCity)
+                : dto.RecipientAddress,
             ExtraNote = dto.ExtraNote,
             CardNote = dto.CardNote,
             CustomerNote = dto.CustomerNote,
@@ -243,6 +248,9 @@ public class OrderService : IOrderService
         RecipientName = o.RecipientName,
         RecipientPhone = o.RecipientPhone,
         RecipientAddress = o.RecipientAddress,
+        RecipientCity = o.RecipientCity,
+        RecipientDistrict = o.RecipientDistrict,
+        RecipientAddressLine = o.RecipientAddressLine,
         TotalPaid = o.Payments.Sum(p => (decimal?)p.Amount) ?? 0m,
         LastPaymentDate = o.Payments.Max(p => (DateTime?)p.PaidAt),
         OrderAmount = o.Amount,
@@ -257,7 +265,8 @@ public class OrderService : IOrderService
         DeliveryFee = o.DeliveryFee,
         ExtraFee = o.ExtraFee,
         Source = o.Source,
-        PaymentStatus = o.PaymentStatus,
+        // Kalan 0 ise "Kısmi" görünmesin → "Ödendi" (geriye dönük görüntü düzeltmesi)
+        PaymentStatus = (o.RemainingAmount <= 0.001m && o.Amount > 0m && o.PaymentStatus == "Kısmi") ? "Ödendi" : o.PaymentStatus,
         DeliveryTimeRange = o.DeliveryTimeRange,
         AssignedCourierId = o.AssignedCourierId,
         DeliveryNote = o.DeliveryNote,
@@ -402,21 +411,42 @@ public class OrderService : IOrderService
         var order = await _db.Orders.FirstOrDefaultAsync(o => o.Code == orderCode, ct)
             ?? throw new NotFoundException("order not found");
 
+        // Çift iadeyi önle: bu sipariş için iade edilebilir tutar = ödenen toplam. Aşılırsa engelle.
+        var paidTotal = await _db.OrderPayments.Where(p => p.OrderId == order.Id).SumAsync(p => (decimal?)p.Amount, ct) ?? 0m;
+        var refundedTotal = await _db.Refunds.Where(r => r.OrderId == order.Id && r.Status != "CANCELLED").SumAsync(r => (decimal?)r.RefundedAmount, ct) ?? 0m;
+        if (refundedTotal + dto.Amount > paidTotal + 0.001m)
+            throw new AppException($"Bu sipariş için iade edilebilir tutar aşıldı (ödenen {paidTotal:0.##} ₺, iade edilen {refundedTotal:0.##} ₺).");
+
         var pmName = await PmNameAsync(dto.PaymentMethodId, ct);
         var nm = order.CustomerId.HasValue
             ? await _db.Customers.Where(c => c.Id == order.CustomerId.Value).Select(c => c.Name).FirstOrDefaultAsync(ct)
             : (order.SenderName ?? order.RecipientName);
 
-        // İade kaydı (izlenebilirlik) — tamamlanmış
-        _db.Refunds.Add(new Refund
+        // İade kaydı: bu siparişin AÇIK (bekleyen) iadesi varsa onu kapat — çift kayıt/bekleyen kalmasın.
+        // Yoksa tamamlanmış yeni bir kayıt oluştur (izlenebilirlik).
+        var openRefund = await _db.Refunds
+            .Where(x => x.OrderId == order.Id && (x.Status == "PENDING" || x.Status == "PARTIAL"))
+            .OrderBy(x => x.CreatedAt).ThenBy(x => x.Id)
+            .FirstOrDefaultAsync(ct);
+        if (openRefund is not null)
         {
-            OrderId = order.Id, OrderCode = order.Code, CustomerId = order.CustomerId,
-            CustomerName = order.CustomerId.HasValue ? nm : null,
-            RecipientName = order.CustomerId.HasValue ? null : (order.SenderName ?? order.RecipientName),
-            RecipientPhone = order.CustomerId.HasValue ? null : (order.SenderPhone ?? order.RecipientPhone),
-            Amount = dto.Amount, RefundedAmount = dto.Amount, Status = "DONE", Reason = dto.Note,
-            CreatedAt = DateTime.UtcNow, CreatedBy = User, CompletedAt = DateTime.UtcNow
-        });
+            openRefund.RefundedAmount = Math.Min(openRefund.Amount, openRefund.RefundedAmount + dto.Amount);
+            openRefund.Status = openRefund.RefundedAmount >= openRefund.Amount - 0.001m ? "DONE" : "PARTIAL";
+            if (openRefund.Status == "DONE") openRefund.CompletedAt = DateTime.UtcNow;
+            if (!string.IsNullOrWhiteSpace(dto.Note)) openRefund.Note = dto.Note;
+        }
+        else
+        {
+            _db.Refunds.Add(new Refund
+            {
+                OrderId = order.Id, OrderCode = order.Code, CustomerId = order.CustomerId,
+                CustomerName = order.CustomerId.HasValue ? nm : null,
+                RecipientName = order.CustomerId.HasValue ? null : (order.SenderName ?? order.RecipientName),
+                RecipientPhone = order.CustomerId.HasValue ? null : (order.SenderPhone ?? order.RecipientPhone),
+                Amount = dto.Amount, RefundedAmount = dto.Amount, Status = "DONE", Reason = dto.Note,
+                CreatedAt = DateTime.UtcNow, CreatedBy = User, CompletedAt = DateTime.UtcNow
+            });
+        }
         // cari ise alacağı kapat (borç kaydı)
         if (order.CustomerId.HasValue)
             await PostLedgerAsync(order.CustomerId.Value, "REFUND", dto.Amount, 0m, "REFUND", order.Id, order.Code, $"Sipariş {order.Code} iade", ct);
@@ -440,7 +470,18 @@ public class OrderService : IOrderService
         order.SenderPhone = dto.SenderPhone ?? order.SenderPhone;
         order.RecipientName = dto.RecipientName ?? dto.OrderTo ?? order.RecipientName;
         order.RecipientPhone = dto.RecipientPhone ?? order.RecipientPhone;
-        order.RecipientAddress = dto.RecipientAddress ?? order.RecipientAddress;
+        // Yapısal adres alanları: gönderildiyse güncelle ve tam adresi yeniden hesapla
+        if (AddressFormatter.HasStructured(dto.RecipientAddressLine, dto.RecipientDistrict, dto.RecipientCity))
+        {
+            order.RecipientCity = dto.RecipientCity ?? order.RecipientCity;
+            order.RecipientDistrict = dto.RecipientDistrict ?? order.RecipientDistrict;
+            order.RecipientAddressLine = dto.RecipientAddressLine ?? order.RecipientAddressLine;
+            order.RecipientAddress = AddressFormatter.FormatFull(order.RecipientAddressLine, order.RecipientDistrict, order.RecipientCity);
+        }
+        else if (dto.RecipientAddress != null)
+        {
+            order.RecipientAddress = dto.RecipientAddress;  // legacy serbest giriş
+        }
         order.DeliveryDate = dto.OrderDeliveryDate ?? order.DeliveryDate;
         order.ProductType = dto.OrderProductType ?? order.ProductType;
         order.CustomerId = dto.CustomerId ?? order.CustomerId;

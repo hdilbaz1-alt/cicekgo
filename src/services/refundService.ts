@@ -4,8 +4,10 @@ export interface RefundDto {
   id: number;
   orderId: number;
   orderCode: string;
-  customerId: number;
+  customerId: number | null;
   customerName?: string | null;
+  recipientName?: string | null;
+  recipientPhone?: string | null;
   amount: number;
   refundedAmount: number;
   remaining: number;
@@ -54,6 +56,16 @@ export const refundService = {
     });
     const b = await res.json();
     if (!res.ok || b.success === false) throw new Error(b.message || 'İade işlenemedi');
+    return b.data as RefundDto;
+  },
+
+  // Bekleyen iadeyi kasa/ödeme kaydı OLUŞTURMADAN "ödendi" kapatır (ödeme başka yolla yapıldıysa).
+  async resolve(id: number, note?: string): Promise<RefundDto> {
+    const res = await fetch(`${getApiUrl(getEndpoint('REFUND_PROCESS'))}/${id}/resolve`, {
+      method: 'POST', headers: auth(), body: JSON.stringify({ note: note || null }),
+    });
+    const b = await res.json();
+    if (!res.ok || b.success === false) throw new Error(b.message || 'İade kapatılamadı');
     return b.data as RefundDto;
   },
 };

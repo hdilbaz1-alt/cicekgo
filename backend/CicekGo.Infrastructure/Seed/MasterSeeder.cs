@@ -1,3 +1,5 @@
+using System.Reflection;
+using System.Text.Json;
 using CicekGo.Application.Abstractions;
 using CicekGo.Domain.Authorization;
 using CicekGo.Domain.Master;
@@ -78,6 +80,38 @@ public class MasterSeeder
 
         // 4) Mevcut firmaların sistem rollerini yeni izin kataloğuna senkronla
         await SyncAllTenantRolesAsync(ct);
+
+        // 5) Türkiye il/ilçe referans verisi (idempotent)
+        await SeedLocationsAsync(ct);
+    }
+
+    private sealed record ProvinceSeed(int Plate, string Name, string[] Districts);
+
+    /// <summary>Gömülü turkey-provinces.json'dan il/ilçe verisini yükler (yalnızca tablo boşsa).</summary>
+    private async Task SeedLocationsAsync(CancellationToken ct)
+    {
+        if (await _db.Provinces.AnyAsync(ct)) return;
+
+        var asm = typeof(MasterSeeder).Assembly;
+        var resourceName = asm.GetManifestResourceNames()
+            .FirstOrDefault(n => n.EndsWith("turkey-provinces.json", StringComparison.OrdinalIgnoreCase));
+        if (resourceName is null) return;
+
+        await using var stream = asm.GetManifestResourceStream(resourceName);
+        if (stream is null) return;
+
+        var data = await JsonSerializer.DeserializeAsync<List<ProvinceSeed>>(stream,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, ct);
+        if (data is null || data.Count == 0) return;
+
+        foreach (var p in data)
+        {
+            var province = new Province { PlateCode = p.Plate, Name = p.Name };
+            foreach (var d in p.Districts)
+                province.Districts.Add(new District { Name = d });
+            _db.Provinces.Add(province);
+        }
+        await _db.SaveChangesAsync(ct);
     }
 
     private static readonly (string Name, string Desc, string[] Perms)[] RoleTemplates =

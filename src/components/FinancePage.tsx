@@ -220,14 +220,21 @@ export default function FinancePage() {
                   <tbody className="divide-y divide-slate-100">
                     {refunds.map((r) => (
                       <tr key={r.id} className="hover:bg-slate-50">
-                        <td className="px-4 py-3 font-medium text-slate-800">{r.customerName || `#${r.customerId}`}</td>
+                        <td className="px-4 py-3 font-medium text-slate-800">{r.customerName || r.recipientName || (r.customerId ? `#${r.customerId}` : 'Cari dışı')}</td>
                         <td className="px-4 py-3 text-slate-500">{r.orderCode}</td>
                         <td className="px-4 py-3 text-slate-500">
                           {r.status === 'PARTIAL' ? `Kısmen (${money(r.refundedAmount)}/${money(r.amount)})` : 'Bekliyor'}
                           {r.plannedDate ? ` · ${fmt(r.plannedDate)}` : ''}
                         </td>
                         <td className="px-4 py-3 text-right font-semibold text-amber-600">{money(r.remaining)}</td>
-                        <td className="px-4 py-3 text-right">{can(P.financeCreatePayment) && <button onClick={() => setProcessRefund(r)} className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold">İade Et</button>}</td>
+                        <td className="px-4 py-3 text-right">{can(P.financeCreatePayment) && (
+                          <div className="inline-flex items-center gap-1.5">
+                            <button onClick={() => setProcessRefund(r)} className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold">İade Et</button>
+                            <button title="Ödeme başka yolla yapıldıysa: kasa kaydı oluşturmadan kapatır"
+                              onClick={async () => { if (!confirm('Bu iade ödeme/kasa kaydı OLUŞTURMADAN kapatılacak. Ödeme zaten yapıldıysa onaylayın.')) return; try { await refundService.resolve(r.id); showToast('İade kapatıldı'); load(); } catch (e) { showToast(e instanceof Error ? e.message : 'Kapatılamadı'); } }}
+                              className="px-3 py-1.5 rounded-xl border border-amber-300 text-amber-700 hover:bg-amber-100 text-xs font-semibold">Ödendi işaretle</button>
+                          </div>
+                        )}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -236,11 +243,17 @@ export default function FinancePage() {
                   {refunds.map((r) => (
                     <div key={r.id} className="px-4 py-3">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-medium text-slate-800 truncate">{r.customerName || `#${r.customerId}`}</span>
+                        <span className="text-sm font-medium text-slate-800 truncate">{r.customerName || r.recipientName || (r.customerId ? `#${r.customerId}` : 'Cari dışı')}</span>
                         <span className="font-semibold text-sm text-amber-600 shrink-0">{money(r.remaining)}</span>
                       </div>
                       <div className="text-[12px] text-slate-400">{r.orderCode}{r.plannedDate ? ` · plan ${fmt(r.plannedDate)}` : ''}{r.status === 'PARTIAL' ? ` · kısmen` : ''}</div>
-                      {can(P.financeCreatePayment) && <button onClick={() => setProcessRefund(r)} className="mt-2 w-full py-2 rounded-xl bg-amber-500 text-white text-xs font-semibold">İade Et</button>}
+                      {can(P.financeCreatePayment) && (
+                        <div className="mt-2 flex gap-2">
+                          <button onClick={() => setProcessRefund(r)} className="flex-1 py-2 rounded-xl bg-amber-500 text-white text-xs font-semibold">İade Et</button>
+                          <button onClick={async () => { if (!confirm('Bu iade ödeme/kasa kaydı OLUŞTURMADAN kapatılacak. Ödeme zaten yapıldıysa onaylayın.')) return; try { await refundService.resolve(r.id); showToast('İade kapatıldı'); load(); } catch (e) { showToast(e instanceof Error ? e.message : 'Kapatılamadı'); } }}
+                            className="flex-1 py-2 rounded-xl border border-amber-300 text-amber-700 text-xs font-semibold">Ödendi işaretle</button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

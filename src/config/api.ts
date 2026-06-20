@@ -35,9 +35,13 @@ export const API_CONFIG = {
     CUSTOMER_LEDGER_ENTRY: '/api/CustomerLedger/entry',
     REFUND_LIST: '/api/Refund/list',
     REFUND_SUMMARY: '/api/Refund/summary',
-    REFUND_PROCESS: '/api/Refund', // /{id}/process
+    REFUND_PROCESS: '/api/Refund', // /{id}/process , /{id}/resolve
     REFUND_SEARCH: '/api/Refund/search',
     ORDERS_SEARCH: '/api/Orders/search',
+    LOCATION_PROVINCES: '/api/Location/provinces',
+    LOCATION_DISTRICTS: '/api/Location/districts',
+    LOCATION_MAPS_KEY: '/api/Location/maps-key',
+    ADMIN_PLATFORM_SETTINGS: '/api/Admin/platform-settings',
     PRODUCT_TYPE_LIST: '/api/ProductType/list',
     PRODUCT_TYPE_ADD: '/api/ProductType/add',
     PRODUCT_TYPE_UPDATE: '/api/ProductType/update',

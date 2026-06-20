@@ -68,6 +68,7 @@ public static class DependencyInjection
         services.AddScoped<Application.PaymentMethods.IPaymentMethodService, PaymentMethodService>();
         services.AddScoped<ITenantAdminService, TenantAdminService>();
         services.AddScoped<IUserAdminService, UserAdminService>();
+        services.AddScoped<Application.Platform.IPlatformSettingsService, PlatformSettingsService>();
         services.AddScoped<Application.Products.IProductService, ProductService>();
         services.AddScoped<Application.Products.IStockService, StockService>();
         services.AddScoped<Application.Products.IUnitService, UnitService>();

@@ -194,6 +194,9 @@ public class TenantDbContext : DbContext
             e.Property(x => x.ProductType).HasMaxLength(150);
             e.Property(x => x.DeliveryTimeRange).HasMaxLength(50);
             e.Property(x => x.DeleteReason).HasMaxLength(300);
+            e.Property(x => x.RecipientCity).HasMaxLength(100);
+            e.Property(x => x.RecipientDistrict).HasMaxLength(100);
+            e.Property(x => x.RecipientAddressLine).HasMaxLength(500);
             e.HasIndex(x => x.DeliveryDate);
             e.HasIndex(x => x.IsDeleted);
             e.HasIndex(x => x.AssignedCourierId);

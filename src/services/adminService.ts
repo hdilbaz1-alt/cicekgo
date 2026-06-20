@@ -171,4 +171,14 @@ export const adminService = {
   async listCouriers(): Promise<UserDto[]> {
     return handle<UserDto[]>(await fetch(`${getApiUrl('/api/Admin/couriers')}`, { headers: authHeaders() }));
   },
+
+  // ---- Platform geneli ayarlar (Google Maps anahtarı) — yalnız süperadmin ----
+  async getPlatformSettings(): Promise<{ googleMapsApiKey: string | null }> {
+    return handle<{ googleMapsApiKey: string | null }>(await fetch(getApiUrl(getEndpoint('ADMIN_PLATFORM_SETTINGS')), { headers: authHeaders() }));
+  },
+  async savePlatformSettings(googleMapsApiKey: string | null): Promise<void> {
+    await handle(await fetch(getApiUrl(getEndpoint('ADMIN_PLATFORM_SETTINGS')), {
+      method: 'PUT', headers: authHeaders(), body: JSON.stringify({ googleMapsApiKey }),
+    }));
+  },
 };

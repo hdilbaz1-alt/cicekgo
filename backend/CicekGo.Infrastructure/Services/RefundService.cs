@@ -132,6 +132,22 @@ public class RefundService : IRefundService
         return Map(r);
     }
 
+    public async Task<RefundDto> ResolveAsync(int refundId, string? note, CancellationToken ct = default)
+    {
+        var r = await _db.Refunds.FirstOrDefaultAsync(x => x.Id == refundId, ct)
+            ?? throw new NotFoundException("refund not found");
+        if (r.Status == "DONE") return Map(r);
+        if (r.Status == "CANCELLED") throw new AppException("Bu iade iptal edilmiş.");
+
+        // Ödeme/kasa kaydı OLUŞTURMAZ — ödeme zaten başka bir yolla (alacak ödemesi / sipariş iadesi) yapıldı.
+        r.RefundedAmount = r.Amount;
+        r.Status = "DONE";
+        r.CompletedAt = DateTime.UtcNow;
+        r.Note = string.IsNullOrWhiteSpace(note) ? (r.Note ?? "Ödendi olarak işaretlendi") : note.Trim();
+        await _db.SaveChangesAsync(ct);
+        return Map(r);
+    }
+
     public async Task<RefundSummaryDto> GetSummaryAsync(CancellationToken ct = default)
     {
         var open = await _db.Refunds.AsNoTracking()

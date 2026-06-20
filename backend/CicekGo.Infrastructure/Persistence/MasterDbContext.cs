@@ -14,6 +14,9 @@ public class MasterDbContext : DbContext
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
+    public DbSet<Province> Provinces => Set<Province>();
+    public DbSet<District> Districts => Set<District>();
+    public DbSet<PlatformSetting> PlatformSettings => Set<PlatformSetting>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -73,6 +76,31 @@ public class MasterDbContext : DbContext
                 .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.Role).WithMany(r => r.UserRoles)
                 .HasForeignKey(x => x.RoleId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<Province>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Name).IsRequired().HasMaxLength(100);
+            e.HasIndex(x => x.PlateCode).IsUnique();
+            e.HasIndex(x => x.Name);
+        });
+
+        b.Entity<District>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Name).IsRequired().HasMaxLength(100);
+            e.HasIndex(x => new { x.ProvinceId, x.Name }).IsUnique();
+            e.HasOne(x => x.Province).WithMany(p => p.Districts)
+                .HasForeignKey(x => x.ProvinceId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<PlatformSetting>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Key).IsRequired().HasMaxLength(100);
+            e.Property(x => x.Value).HasMaxLength(1000);
+            e.HasIndex(x => x.Key).IsUnique();
         });
     }
 }

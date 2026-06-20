@@ -36,7 +36,12 @@ public class Order
     public string? SenderPhone { get; set; }
     public string? RecipientName { get; set; }
     public string? RecipientPhone { get; set; }
-    public string? RecipientAddress { get; set; }
+    public string? RecipientAddress { get; set; }      // kanonik tam adres (hesaplanan): "[Açık Adres] İLÇE/İL"
+
+    // Yapısal teslimat adresi (İl/İlçe zorunlu, Açık Adres serbest)
+    public string? RecipientCity { get; set; }         // İl
+    public string? RecipientDistrict { get; set; }     // İlçe
+    public string? RecipientAddressLine { get; set; }  // Açık Adres (mahalle, sokak, bina no...)
 
     // Notlar
     public string? ExtraNote { get; set; }
