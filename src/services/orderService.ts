@@ -21,8 +21,10 @@ export interface OrderItem {
   createdUser: string;
   senderName: string;
   senderPhone: string;
+  senderEmail?: string | null;
   recipientName: string;
   recipientPhone: string;
+  recipientEmail?: string | null;
   recipientAddress: string;
   recipientCity?: string | null;
   recipientDistrict?: string | null;
@@ -96,8 +98,10 @@ export interface CreateOrderRequest {
   customerNote: string;
   senderName: string;
   senderPhone: string;
+  senderEmail?: string | null;
   recipientName: string;
   recipientPhone: string;
+  recipientEmail?: string | null;
   recipientAddress: string;
   isNotified: boolean;
   payments: Array<{
@@ -137,8 +141,10 @@ export interface UpdateOrderRequest {
   customerNote: string;
   senderName: string;
   senderPhone: string;
+  senderEmail?: string | null;
   recipientName: string;
   recipientPhone: string;
+  recipientEmail?: string | null;
   recipientAddress: string;
   isNotified: boolean;
   replacePayments: boolean;

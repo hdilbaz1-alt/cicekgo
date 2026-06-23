@@ -54,8 +54,10 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
   const [saveAsNew, setSaveAsNew] = useState(false);
   const [senderName, setSenderName] = useState('');
   const [senderPhone, setSenderPhone] = useState('');
+  const [senderEmail, setSenderEmail] = useState('');
   const [recipientName, setRecipientName] = useState('');
   const [recipientPhone, setRecipientPhone] = useState('');
+  const [recipientEmail, setRecipientEmail] = useState('');
   // Yapısal teslimat adresi
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -96,8 +98,8 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
   const [productPick, setProductPick] = useState<number | ''>('');
 
   const resetForm = useCallback(() => {
-    setItems([]); setCustomerId(undefined); setSaveAsNew(false); setSenderName(''); setSenderPhone('');
-    setRecipientName(''); setRecipientPhone('');
+    setItems([]); setCustomerId(undefined); setSaveAsNew(false); setSenderName(''); setSenderPhone(''); setSenderEmail('');
+    setRecipientName(''); setRecipientPhone(''); setRecipientEmail('');
     setProvinceId(''); setDistrictId(''); setDistricts([]); setAddressLine('');
     // Varsayılan adres (kullanıcı bazlı, localStorage) → İl (ve varsa İlçe) ön-dolu gelir
     const def = readDefaultAddress();
@@ -156,8 +158,8 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
           setItems((d.items || []).map((i) => ({ ...i })));
           setCustomerId(d.customerId ?? undefined);
           setCustomerLabel(d.customerId ? (d.senderName || '') : '');
-          setSenderName(d.senderName || ''); setSenderPhone(d.senderPhone || '');
-          setRecipientName(d.recipientName || ''); setRecipientPhone(d.recipientPhone || '');
+          setSenderName(d.senderName || ''); setSenderPhone(d.senderPhone || ''); setSenderEmail(d.senderEmail || '');
+          setRecipientName(d.recipientName || ''); setRecipientPhone(d.recipientPhone || ''); setRecipientEmail(d.recipientEmail || '');
           // Yapısal adres varsa onu çöz; yoksa legacy serbest adresi Açık Adres'e koy
           setProvinceId(''); setDistrictId(''); setDistricts([]);
           setPendingProvinceName(d.recipientCity || null);
@@ -251,7 +253,7 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
       orderSender: senderName, orderTo: recipientName,
       orderDeliveryDate: deliveryIso,
       orderProductType: items[0]?.productName || '',
-      customerId: cid, senderName, senderPhone, recipientName, recipientPhone,
+      customerId: cid, senderName, senderPhone, senderEmail, recipientName, recipientPhone, recipientEmail,
       recipientCity: provinceName, recipientDistrict: districtName, recipientAddressLine: addressLine,
       recipientAddress: addressPreview,
       extraNote, cardNote, customerNote, deliveryNote, isNotified,
@@ -318,6 +320,7 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
           <section className="grid sm:grid-cols-2 gap-4">
             <div><div className="flex items-center justify-between"><label className={lbl}>Gönderici Ad</label><CopyButton value={senderName} /></div><input className={inputCls + ' mt-1'} value={senderName} onChange={(e) => setSenderName(e.target.value)} /></div>
             <div><div className="flex items-center justify-between"><label className={lbl}>Gönderici Tel</label><CopyButton value={senderPhone} /></div><input type="tel" inputMode="numeric" maxLength={11} placeholder="05531234567" className={inputCls + ' mt-1'} value={senderPhone} onChange={(e) => setSenderPhone(e.target.value.replace(/\D/g, '').slice(0, 11))} /></div>
+            <div><label className={lbl}>Gönderici E-posta</label><input type="email" placeholder="gonderici@ornek.com" className={inputCls + ' mt-1'} value={senderEmail} onChange={(e) => setSenderEmail(e.target.value)} /></div>
             {!isEdit && !customerId && senderName.trim() && (
               <label className="sm:col-span-2 flex items-center gap-2.5 bg-indigo-50 border border-indigo-100 rounded-xl px-3.5 py-2.5 text-sm text-slate-700 cursor-pointer">
                 <input type="checkbox" checked={saveAsNew} onChange={(e) => setSaveAsNew(e.target.checked)} className="w-4 h-4 rounded accent-indigo-600" />
@@ -326,6 +329,7 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
             )}
             <div><div className="flex items-center justify-between"><label className={lbl}>Alıcı Ad *</label><CopyButton value={recipientName} /></div><input className={inputCls + ' mt-1'} value={recipientName} onChange={(e) => setRecipientName(e.target.value)} /></div>
             <div><div className="flex items-center justify-between"><label className={lbl}>Alıcı Tel</label><CopyButton value={recipientPhone} /></div><input type="tel" inputMode="numeric" maxLength={11} placeholder="05531234567" className={inputCls + ' mt-1'} value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value.replace(/\D/g, '').slice(0, 11))} /></div>
+            <div><label className={lbl}>Alıcı E-posta</label><input type="email" placeholder="alici@ornek.com" className={inputCls + ' mt-1'} value={recipientEmail} onChange={(e) => setRecipientEmail(e.target.value)} /></div>
             {/* Teslimat Adresi: İl / İlçe (zorunlu) + Açık Adres + harita */}
             <div className="sm:col-span-2">
               <div className="flex items-center justify-between">

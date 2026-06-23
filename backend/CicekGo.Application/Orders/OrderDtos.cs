@@ -56,9 +56,11 @@ public class OrderCreateDto
 
     public string? SenderName { get; set; }
     public string? SenderPhone { get; set; }
+    public string? SenderEmail { get; set; }
 
     public string? RecipientName { get; set; }
     public string? RecipientPhone { get; set; }
+    public string? RecipientEmail { get; set; }
     public string? RecipientAddress { get; set; }
     public string? RecipientCity { get; set; }         // İl
     public string? RecipientDistrict { get; set; }     // İlçe
@@ -97,9 +99,11 @@ public class OrderUpdateDto
 
     public string? SenderName { get; set; }
     public string? SenderPhone { get; set; }
+    public string? SenderEmail { get; set; }
 
     public string? RecipientName { get; set; }
     public string? RecipientPhone { get; set; }
+    public string? RecipientEmail { get; set; }
     public string? RecipientAddress { get; set; }
     public string? RecipientCity { get; set; }         // İl
     public string? RecipientDistrict { get; set; }     // İlçe
@@ -132,8 +136,10 @@ public class OrderListItemDto
 
     public string? SenderName { get; set; }
     public string? SenderPhone { get; set; }
+    public string? SenderEmail { get; set; }
     public string? RecipientName { get; set; }
     public string? RecipientPhone { get; set; }
+    public string? RecipientEmail { get; set; }
     public string? RecipientAddress { get; set; }
     public string? RecipientCity { get; set; }
     public string? RecipientDistrict { get; set; }

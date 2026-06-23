@@ -17,14 +17,16 @@ public class OrderService : IOrderService
     private readonly IAuditLogger _audit;
     private readonly MasterDbContext _master;
     private readonly IPushNotificationService _push;
+    private readonly Application.Email.IEmailDispatcher _email;
 
-    public OrderService(TenantDbContext db, ICurrentUser current, IAuditLogger audit, MasterDbContext master, IPushNotificationService push)
+    public OrderService(TenantDbContext db, ICurrentUser current, IAuditLogger audit, MasterDbContext master, IPushNotificationService push, Application.Email.IEmailDispatcher email)
     {
         _db = db;
         _current = current;
         _audit = audit;
         _master = master;
         _push = push;
+        _email = email;
     }
 
     /// <summary>Atanan kuryeye "yeni sipariş" push bildirimi (commit sonrası, hata yutulur).</summary>
@@ -87,8 +89,10 @@ public class OrderService : IOrderService
             IsNotified = dto.IsNotified ?? false,
             SenderName = dto.SenderName ?? dto.OrderSender,
             SenderPhone = dto.SenderPhone,
+            SenderEmail = dto.SenderEmail,
             RecipientName = dto.RecipientName ?? dto.OrderTo,
             RecipientPhone = dto.RecipientPhone,
+            RecipientEmail = dto.RecipientEmail,
             RecipientCity = dto.RecipientCity,
             RecipientDistrict = dto.RecipientDistrict,
             RecipientAddressLine = dto.RecipientAddressLine,
@@ -270,8 +274,10 @@ public class OrderService : IOrderService
         CreatedUser = o.CreatedBy,
         SenderName = o.SenderName,
         SenderPhone = o.SenderPhone,
+        SenderEmail = o.SenderEmail,
         RecipientName = o.RecipientName,
         RecipientPhone = o.RecipientPhone,
+        RecipientEmail = o.RecipientEmail,
         RecipientAddress = o.RecipientAddress,
         RecipientCity = o.RecipientCity,
         RecipientDistrict = o.RecipientDistrict,
@@ -493,8 +499,10 @@ public class OrderService : IOrderService
         order.Status = dto.OrderStatus ?? order.Status;
         order.SenderName = dto.SenderName ?? dto.OrderSender ?? order.SenderName;
         order.SenderPhone = dto.SenderPhone ?? order.SenderPhone;
+        order.SenderEmail = dto.SenderEmail ?? order.SenderEmail;
         order.RecipientName = dto.RecipientName ?? dto.OrderTo ?? order.RecipientName;
         order.RecipientPhone = dto.RecipientPhone ?? order.RecipientPhone;
+        order.RecipientEmail = dto.RecipientEmail ?? order.RecipientEmail;
         // Yapısal adres alanları: gönderildiyse güncelle ve tam adresi yeniden hesapla
         if (AddressFormatter.HasStructured(dto.RecipientAddressLine, dto.RecipientDistrict, dto.RecipientCity))
         {
@@ -793,6 +801,13 @@ public class OrderService : IOrderService
 
         await _audit.LogAsync("CHANGE_STATUS", "Orders", "Order", order.Id.ToString(),
             $"Durum: {old} -> {dto.Status}", ct: ct);
+
+        // Durum gerçekten değiştiyse e-posta tetikle (commit sonrası, hata yutulur)
+        if (old != dto.Status)
+        {
+            try { await _email.EnqueueForOrderStatusAsync(order.Id, ct); }
+            catch { /* e-posta tetikleme hatası sipariş akışını bozmamalı (dispatcher loglar) */ }
+        }
     }
 
     /// <summary>Sipariş iptal/silme finansalları: cari borcu geri al, ödenen tutar için bekleyen iade oluştur (idempotent).</summary>

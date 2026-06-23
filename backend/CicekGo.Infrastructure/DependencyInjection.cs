@@ -85,6 +85,12 @@ public static class DependencyInjection
         services.AddScoped<Application.Printing.IPrintTemplateService, PrintTemplateService>();
         services.AddScoped<Application.Account.IAccountService, AccountService>();
         services.AddScoped<Application.Email.IEmailSettingsService, EmailSettingsService>();
+        services.AddScoped<Application.Email.IEmailTemplateService, EmailTemplateService>();
+        services.AddScoped<Application.Email.IEmailTriggerService, EmailTriggerService>();
+        services.AddScoped<Application.Email.IEmailDispatcher, EmailDispatcher>();
+        services.AddScoped<IEmailSenderService, EmailSenderService>();
+        services.AddSingleton<EmailQueueSignal>();
+        services.AddHostedService<EmailDispatcherWorker>();
 
         // Seeder + tenant migrator
         services.AddScoped<MasterSeeder>();
