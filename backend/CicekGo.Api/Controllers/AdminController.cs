@@ -138,6 +138,19 @@ public class AdminController : ControllerBase
     public async Task<ActionResult<ApiResponse<RoleDto>>> CreateRole([FromBody] CreateRoleRequestDto dto, CancellationToken ct)
         => Ok(ApiResponse<RoleDto>.Ok(await _users.CreateRoleAsync(CurrentTenantId(), dto, ct), "Rol oluşturuldu.", 201));
 
+    [HttpPut("roles/{roleId:int}")]
+    [HasPermission(Permissions.UsersManage)]
+    public async Task<ActionResult<ApiResponse<RoleDto>>> UpdateRole(int roleId, [FromBody] CreateRoleRequestDto dto, CancellationToken ct)
+        => Ok(ApiResponse<RoleDto>.Ok(await _users.UpdateRoleAsync(CurrentTenantId(), roleId, dto, ct), "Rol güncellendi."));
+
+    [HttpDelete("roles/{roleId:int}")]
+    [HasPermission(Permissions.UsersManage)]
+    public async Task<ActionResult<ApiResponse<string>>> DeleteRole(int roleId, CancellationToken ct)
+    {
+        await _users.DeleteRoleAsync(CurrentTenantId(), roleId, ct);
+        return Ok(ApiResponse<string>.Ok("deleted", "Rol silindi."));
+    }
+
     private int CurrentTenantId() =>
         _current.TenantId ?? throw new ForbiddenException("Bu işlem bir firma bağlamı gerektirir.");
 }

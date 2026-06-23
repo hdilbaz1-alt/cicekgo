@@ -19,6 +19,8 @@ public interface IUserAdminService
 
     Task<IReadOnlyList<RoleDto>> GetRolesAsync(int tenantId, CancellationToken ct = default);
     Task<RoleDto> CreateRoleAsync(int tenantId, CreateRoleRequestDto dto, CancellationToken ct = default);
+    Task<RoleDto> UpdateRoleAsync(int tenantId, int roleId, CreateRoleRequestDto dto, CancellationToken ct = default);
+    Task DeleteRoleAsync(int tenantId, int roleId, CancellationToken ct = default);
     Task<IReadOnlyList<UserDto>> GetCouriersAsync(int tenantId, CancellationToken ct = default);
     IReadOnlyList<PermissionDto> GetPermissionCatalog();
 }

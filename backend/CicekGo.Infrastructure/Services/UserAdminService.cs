@@ -165,4 +165,37 @@ public class UserAdminService : IUserAdminService
 
         return (await GetRolesAsync(tenantId, ct)).First(r => r.Id == role.Id);
     }
+
+    public async Task<RoleDto> UpdateRoleAsync(int tenantId, int roleId, CreateRoleRequestDto dto, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Name)) throw new AppException("Rol adı zorunludur.");
+        var role = await _master.Roles.Include(r => r.RolePermissions)
+            .FirstOrDefaultAsync(r => r.Id == roleId && r.TenantId == tenantId, ct)
+            ?? throw new NotFoundException("Rol bulunamadı.");
+        if (role.IsSystem) throw new AppException("Sistem rolleri düzenlenemez.");
+        if (await _master.Roles.AnyAsync(r => r.TenantId == tenantId && r.Name == dto.Name && r.Id != roleId, ct))
+            throw new ConflictException("Bu rol adı zaten var.");
+
+        role.Name = dto.Name.Trim();
+        role.Description = dto.Description;
+
+        // İzinleri yeniden kur
+        _master.RolePermissions.RemoveRange(role.RolePermissions);
+        var permIds = await _master.Permissions.Where(p => dto.Permissions.Contains(p.Code)).Select(p => p.Id).ToListAsync(ct);
+        foreach (var pid in permIds)
+            _master.RolePermissions.Add(new RolePermission { RoleId = role.Id, PermissionId = pid });
+        await _master.SaveChangesAsync(ct);
+
+        return (await GetRolesAsync(tenantId, ct)).First(r => r.Id == role.Id);
+    }
+
+    public async Task DeleteRoleAsync(int tenantId, int roleId, CancellationToken ct = default)
+    {
+        var role = await _master.Roles.FirstOrDefaultAsync(r => r.Id == roleId && r.TenantId == tenantId, ct)
+            ?? throw new NotFoundException("Rol bulunamadı.");
+        if (role.IsSystem) throw new AppException("Sistem rolleri silinemez.");
+        // RolePermissions ve UserRoles FK cascade ile temizlenir
+        _master.Roles.Remove(role);
+        await _master.SaveChangesAsync(ct);
+    }
 }

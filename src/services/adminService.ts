@@ -180,6 +180,16 @@ export const adminService = {
       method: 'POST', headers: authHeaders(), body: JSON.stringify(req),
     }));
   },
+  async updateMyRole(roleId: number, req: CreateRoleRequest): Promise<RoleDto> {
+    return handle<RoleDto>(await apiFetch(`${getApiUrl(getEndpoint('ADMIN_ROLES'))}/${roleId}`, {
+      method: 'PUT', headers: authHeaders(), body: JSON.stringify(req),
+    }));
+  },
+  async deleteMyRole(roleId: number): Promise<void> {
+    await handle<string>(await apiFetch(`${getApiUrl(getEndpoint('ADMIN_ROLES'))}/${roleId}`, {
+      method: 'DELETE', headers: authHeaders(),
+    }));
+  },
   async listCouriers(): Promise<UserDto[]> {
     return handle<UserDto[]>(await apiFetch(`${getApiUrl('/api/Admin/couriers')}`, { headers: authHeaders() }));
   },
