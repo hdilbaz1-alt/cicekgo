@@ -32,6 +32,8 @@ export interface UserDto {
   isActive: boolean;
   isPlatformAdmin: boolean;
   roles: RoleDto[];
+  extraPermissions: string[];
+  revokedPermissions: string[];
 }
 
 export interface PermissionDto {
@@ -63,6 +65,8 @@ export interface CreateUserRequest {
   email?: string | null;
   fullName?: string | null;
   roleIds: number[];
+  extraPermissions?: string[];
+  revokedPermissions?: string[];
 }
 
 export interface CreateRoleRequest {
@@ -77,6 +81,8 @@ export interface UpdateUserRequest {
   isActive?: boolean;
   newPassword?: string | null;
   roleIds?: number[] | null;
+  extraPermissions?: string[];
+  revokedPermissions?: string[];
 }
 
 function authHeaders(): HeadersInit {

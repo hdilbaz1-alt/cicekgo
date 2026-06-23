@@ -268,16 +268,38 @@ function UserForm({ roles, user, onClose, onSaved }: {
   const [err, setErr] = useState('');
   useEscClose(onClose);
 
-  const toggleRole = (id: number) => setRoleIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
+  const baselineOf = useCallback((ids: number[]) => new Set(roles.filter((r) => ids.includes(r.id)).flatMap((r) => r.permissions)), [roles]);
+  // Efektif izinler: rol tabanı ∪ ekstra \ kaldırılan
+  const [effective, setEffective] = useState<Set<string>>(() => {
+    const s = baselineOf(user?.roles.map((r) => r.id) || []);
+    (user?.extraPermissions || []).forEach((p) => s.add(p));
+    (user?.revokedPermissions || []).forEach((p) => s.delete(p));
+    return new Set(s);
+  });
+  const base = useMemo(() => baselineOf(roleIds), [baselineOf, roleIds]);
+  const groups = useMemo(() => groupPermissions(ALLOWED_PERM_CODES), []);
+
+  const toggleRole = (id: number) => {
+    const next = roleIds.includes(id) ? roleIds.filter((x) => x !== id) : [...roleIds, id];
+    setRoleIds(next);
+    setEffective(baselineOf(next)); // rol değişince izinler role göre yenilenir
+  };
+  const togglePerm = (code: string) => setEffective((prev) => { const s = new Set(prev); s.has(code) ? s.delete(code) : s.add(code); return s; });
+  const toggleGroupPerm = (codes: string[]) => setEffective((prev) => {
+    const s = new Set(prev); const allOn = codes.every((c) => s.has(c));
+    codes.forEach((c) => (allOn ? s.delete(c) : s.add(c))); return s;
+  });
 
   const save = async () => {
     setErr('');
     if (!isEdit && !username.trim()) return setErr('Kullanıcı adı gerekli');
     if (!isEdit && password.length < 6) return setErr('Şifre en az 6 karakter olmalı');
+    const extraPermissions = [...effective].filter((c) => !base.has(c));
+    const revokedPermissions = [...base].filter((c) => !effective.has(c));
     setBusy(true);
     try {
-      if (isEdit && user) { await adminService.updateMyUser(user.id, { fullName, email, isActive: active, roleIds, newPassword: password || null }); onSaved('Kullanıcı güncellendi'); }
-      else { await adminService.createMyUser({ username, password, email, fullName, roleIds }); onSaved('Kullanıcı oluşturuldu'); }
+      if (isEdit && user) { await adminService.updateMyUser(user.id, { fullName, email, isActive: active, roleIds, newPassword: password || null, extraPermissions, revokedPermissions }); onSaved('Kullanıcı güncellendi'); }
+      else { await adminService.createMyUser({ username, password, email, fullName, roleIds, extraPermissions, revokedPermissions }); onSaved('Kullanıcı oluşturuldu'); }
     } catch (e) { setErr(e instanceof Error ? e.message : 'Kaydedilemedi'); setBusy(false); }
   };
 
@@ -292,46 +314,87 @@ function UserForm({ roles, user, onClose, onSaved }: {
   return (
     <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md max-h-[92dvh] overflow-y-auto p-6 sm:p-7">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-3xl max-h-[92dvh] overflow-y-auto p-6 sm:p-7">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-xl font-bold">{isEdit ? 'Kullanıcıyı Düzenle' : 'Yeni Kullanıcı'}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl leading-none">×</button>
         </div>
-        <div className="space-y-4">
-          {!isEdit && (<div><label className="text-sm font-medium text-slate-700">Kullanıcı Adı</label><input className={inputCls + ' mt-1.5'} value={username} onChange={(e) => setUsername(e.target.value)} autoFocus /></div>)}
-          <div><label className="text-sm font-medium text-slate-700">Ad Soyad</label><input className={inputCls + ' mt-1.5'} value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
-          <div><label className="text-sm font-medium text-slate-700">E-posta</label><input className={inputCls + ' mt-1.5'} value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-          <div><label className="text-sm font-medium text-slate-700">{isEdit ? 'Yeni Şifre (boş = değişmez)' : 'Şifre'}</label><input type="text" className={inputCls + ' mt-1.5'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder={isEdit ? '••••••' : 'En az 6 karakter'} /></div>
 
+        <div className="grid lg:grid-cols-2 gap-5">
+          {/* Sol: bilgiler + roller */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {!isEdit && (<div className="sm:col-span-2"><label className="text-sm font-medium text-slate-700">Kullanıcı Adı</label><input className={inputCls + ' mt-1.5'} value={username} onChange={(e) => setUsername(e.target.value)} autoFocus /></div>)}
+              <div><label className="text-sm font-medium text-slate-700">Ad Soyad</label><input className={inputCls + ' mt-1.5'} value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
+              <div><label className="text-sm font-medium text-slate-700">E-posta</label><input className={inputCls + ' mt-1.5'} value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+              <div className="sm:col-span-2"><label className="text-sm font-medium text-slate-700">{isEdit ? 'Yeni Şifre (boş = değişmez)' : 'Şifre'}</label><input type="text" className={inputCls + ' mt-1.5'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder={isEdit ? '••••••' : 'En az 6 karakter'} /></div>
+            </div>
+
+            <div>
+              <span className="text-sm font-medium text-slate-700">Roller</span>
+              <div className="mt-2 grid grid-cols-1 gap-1.5 max-h-44 overflow-y-auto pr-1">
+                {roles.map((r) => (
+                  <label key={r.id} className={`flex items-center gap-2.5 rounded-xl px-3 py-2 cursor-pointer border transition-colors ${roleIds.includes(r.id) ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-slate-50'}`}>
+                    <input type="checkbox" checked={roleIds.includes(r.id)} onChange={() => toggleRole(r.id)} className="w-4 h-4 rounded accent-indigo-600" />
+                    <div className="min-w-0"><div className="font-medium text-sm truncate">{r.name}</div><div className="text-[11px] text-slate-400 truncate">{r.description || `${r.permissions.length} izin`}</div></div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {isEdit && (
+              <div className="flex items-center justify-between bg-slate-50 rounded-2xl px-4 py-3">
+                <div className="font-medium text-sm">Aktif</div>
+                <button onClick={() => setActive((a) => !a)} className={`w-12 h-7 rounded-full transition-colors relative ${active ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                  <span className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-all ${active ? 'left-[22px]' : 'left-0.5'}`} />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Sağ: efektif izinler (rol izinlerini tek tek aç/kapat) */}
           <div>
-            <span className="text-sm font-medium text-slate-700">Roller</span>
-            <div className="mt-2 space-y-2">
-              {roles.map((r) => (
-                <label key={r.id} className={`flex items-start gap-3 rounded-2xl px-4 py-3 cursor-pointer border transition-colors ${roleIds.includes(r.id) ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-slate-50'}`}>
-                  <input type="checkbox" checked={roleIds.includes(r.id)} onChange={() => toggleRole(r.id)} className="w-5 h-5 rounded accent-indigo-600 mt-0.5" />
-                  <div><div className="font-medium text-sm">{r.name}</div><div className="text-xs text-slate-400">{r.description || `${r.permissions.length} izin`}</div></div>
-                </label>
-              ))}
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-slate-700">İzinler</span>
+              <span className="text-[11px] text-slate-400">{effective.size} aktif</span>
+            </div>
+            <p className="text-[11px] text-slate-400 mb-2">Rol seçince doluşur; istediğin izni tek tek kaldırabilir/ekleyebilirsin. <span className="text-emerald-600">●</span> rol dışı ek</p>
+            <div className="space-y-2.5 max-h-[46vh] overflow-y-auto pr-1">
+              {groups.map((g) => {
+                const codes = g.items.map((i) => i.code);
+                const allOn = codes.every((c) => effective.has(c));
+                const someOn = codes.some((c) => effective.has(c));
+                return (
+                  <div key={g.group} className="border border-slate-200 rounded-xl p-2.5">
+                    <label className="flex items-center gap-2 cursor-pointer mb-1.5">
+                      <input type="checkbox" checked={allOn} ref={(el) => { if (el) el.indeterminate = !allOn && someOn; }} onChange={() => toggleGroupPerm(codes)} className="w-4 h-4 rounded accent-indigo-600" />
+                      <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">{g.group}</span>
+                    </label>
+                    <div className="grid grid-cols-1 gap-0.5">
+                      {g.items.map((it) => {
+                        const on = effective.has(it.code); const extra = on && !base.has(it.code);
+                        return (
+                          <label key={it.code} className="flex items-center gap-2 cursor-pointer text-[13px] text-slate-600 rounded-lg px-1.5 py-1 hover:bg-slate-50">
+                            <input type="checkbox" checked={on} onChange={() => togglePerm(it.code)} className="w-4 h-4 rounded accent-indigo-600 shrink-0" />
+                            <span className="truncate">{it.label}</span>
+                            {extra && <span className="text-emerald-500 text-[10px] shrink-0">●</span>}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
+        </div>
 
-          {isEdit && (
-            <div className="flex items-center justify-between bg-slate-50 rounded-2xl px-4 py-3">
-              <div className="font-medium text-sm">Aktif</div>
-              <button onClick={() => setActive((a) => !a)} className={`w-12 h-7 rounded-full transition-colors relative ${active ? 'bg-emerald-500' : 'bg-slate-300'}`}>
-                <span className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-all ${active ? 'left-[22px]' : 'left-0.5'}`} />
-              </button>
-            </div>
-          )}
-
-          {err && <p className="text-sm text-red-600">{err}</p>}
-
-          <div className="flex gap-2 pt-1">
-            {isEdit && <button onClick={del} disabled={busy} className="px-4 py-2.5 rounded-2xl font-medium text-red-600 hover:bg-red-50 disabled:opacity-50">Sil</button>}
-            <div className="flex-1" />
-            <button onClick={onClose} className="px-4 py-2.5 rounded-2xl font-medium text-slate-500 hover:bg-slate-100">İptal</button>
-            <button onClick={save} disabled={busy} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-2xl font-semibold disabled:opacity-50">{busy ? 'Kaydediliyor…' : 'Kaydet'}</button>
-          </div>
+        {err && <p className="text-sm text-red-600 mt-3">{err}</p>}
+        <div className="flex gap-2 pt-4 mt-1 border-t border-slate-100">
+          {isEdit && <button onClick={del} disabled={busy} className="px-4 py-2.5 rounded-2xl font-medium text-red-600 hover:bg-red-50 disabled:opacity-50">Sil</button>}
+          <div className="flex-1" />
+          <button onClick={onClose} className="px-4 py-2.5 rounded-2xl font-medium text-slate-500 hover:bg-slate-100">İptal</button>
+          <button onClick={save} disabled={busy} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-2xl font-semibold disabled:opacity-50">{busy ? 'Kaydediliyor…' : 'Kaydet'}</button>
         </div>
       </div>
     </div>
@@ -371,48 +434,48 @@ function RoleForm({ role, onClose, onSaved }: { role: RoleDto | null; onClose: (
   return (
     <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto p-6 sm:p-7">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-3xl max-h-[92dvh] overflow-y-auto p-6 sm:p-7">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-xl font-bold">{isEdit ? 'Rolü Düzenle' : 'Yeni Rol'}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl leading-none">×</button>
         </div>
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div><label className="text-sm font-medium text-slate-700">Rol Adı</label><input className={inputCls + ' mt-1.5'} value={name} onChange={(e) => setName(e.target.value)} placeholder="Örn. Mağaza Sorumlusu" autoFocus /></div>
           <div><label className="text-sm font-medium text-slate-700">Açıklama (opsiyonel)</label><input className={inputCls + ' mt-1.5'} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Bu rolün amacı" /></div>
+        </div>
 
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-700">Özel İzinler</span>
-              <span className="text-xs text-slate-400">{perms.length} seçili</span>
-            </div>
-            <div className="mt-2 space-y-3">
-              {groups.map((g) => {
-                const codes = g.items.map((i) => i.code);
-                const allOn = codes.every((c) => perms.includes(c));
-                const someOn = codes.some((c) => perms.includes(c));
-                return (
-                  <div key={g.group} className="border border-slate-200 rounded-2xl p-3">
-                    <label className="flex items-center gap-2 cursor-pointer mb-2">
-                      <input type="checkbox" checked={allOn} ref={(el) => { if (el) el.indeterminate = !allOn && someOn; }} onChange={() => toggleGroup(codes)} className="w-4 h-4 rounded accent-indigo-600" />
-                      <span className="text-sm font-semibold text-slate-700">{g.group}</span>
-                    </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pl-1">
-                      {g.items.map((it) => (
-                        <label key={it.code} className="flex items-center gap-2 cursor-pointer text-sm text-slate-600 rounded-lg px-2 py-1 hover:bg-slate-50">
-                          <input type="checkbox" checked={perms.includes(it.code)} onChange={() => toggle(it.code)} className="w-4 h-4 rounded accent-indigo-600 shrink-0" />
-                          <span className="truncate">{it.label}</span>
-                        </label>
-                      ))}
-                    </div>
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-slate-700">Özel İzinler</span>
+            <span className="text-xs text-slate-400">{perms.length} seçili</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[52vh] overflow-y-auto pr-1">
+            {groups.map((g) => {
+              const codes = g.items.map((i) => i.code);
+              const allOn = codes.every((c) => perms.includes(c));
+              const someOn = codes.some((c) => perms.includes(c));
+              return (
+                <div key={g.group} className="border border-slate-200 rounded-xl p-2.5">
+                  <label className="flex items-center gap-2 cursor-pointer mb-1.5">
+                    <input type="checkbox" checked={allOn} ref={(el) => { if (el) el.indeterminate = !allOn && someOn; }} onChange={() => toggleGroup(codes)} className="w-4 h-4 rounded accent-indigo-600" />
+                    <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">{g.group}</span>
+                  </label>
+                  <div className="grid grid-cols-1 gap-0.5">
+                    {g.items.map((it) => (
+                      <label key={it.code} className="flex items-center gap-2 cursor-pointer text-[13px] text-slate-600 rounded-lg px-1.5 py-1 hover:bg-slate-50">
+                        <input type="checkbox" checked={perms.includes(it.code)} onChange={() => toggle(it.code)} className="w-4 h-4 rounded accent-indigo-600 shrink-0" />
+                        <span className="truncate">{it.label}</span>
+                      </label>
+                    ))}
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
 
-          {err && <p className="text-sm text-red-600">{err}</p>}
+          {err && <p className="text-sm text-red-600 mt-3">{err}</p>}
 
-          <div className="flex gap-2 pt-1">
+          <div className="flex gap-2 pt-4 mt-1 border-t border-slate-100">
             <div className="flex-1" />
             <button onClick={onClose} className="px-4 py-2.5 rounded-2xl font-medium text-slate-500 hover:bg-slate-100">İptal</button>
             <button onClick={save} disabled={busy} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-2xl font-semibold disabled:opacity-50">{busy ? 'Kaydediliyor…' : isEdit ? 'Kaydet' : 'Rol Oluştur'}</button>

@@ -19,6 +19,15 @@ public class UserAdminService : IUserAdminService
         _hasher = hasher;
     }
 
+    private static string? JoinCsv(IEnumerable<string>? items)
+    {
+        if (items is null) return null;
+        var arr = items.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).Distinct().ToArray();
+        return arr.Length == 0 ? null : string.Join(',', arr);
+    }
+    private static List<string> SplitCsv(string? s) =>
+        string.IsNullOrWhiteSpace(s) ? new List<string>() : s.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+
     public async Task<UserDto> CreateUserAsync(int tenantId, CreateUserRequestDto dto, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(dto.Username)) throw new AppException("Kullanıcı adı zorunludur.");
@@ -45,6 +54,8 @@ public class UserAdminService : IUserAdminService
             PasswordHash = _hasher.Hash(dto.Password),
             IsActive = true,
             IsPlatformAdmin = false,
+            ExtraPermissions = JoinCsv(dto.ExtraPermissions),
+            RevokedPermissions = JoinCsv(dto.RevokedPermissions),
             CreatedAtUtc = DateTime.UtcNow
         };
         _master.Users.Add(user);
@@ -57,19 +68,15 @@ public class UserAdminService : IUserAdminService
         return (await GetUsersAsync(tenantId, ct)).First(u => u.Id == user.Id);
     }
 
-    public async Task<IReadOnlyList<UserDto>> GetUsersAsync(int tenantId, CancellationToken ct = default) =>
-        await _master.Users.AsNoTracking()
+    public async Task<IReadOnlyList<UserDto>> GetUsersAsync(int tenantId, CancellationToken ct = default)
+    {
+        var rows = await _master.Users.AsNoTracking()
             .Where(u => u.TenantId == tenantId)
             .OrderBy(u => u.Username)
-            .Select(u => new UserDto
+            .Select(u => new
             {
-                Id = u.Id,
-                TenantId = u.TenantId,
-                Username = u.Username,
-                Email = u.Email,
-                FullName = u.FullName,
-                IsActive = u.IsActive,
-                IsPlatformAdmin = u.IsPlatformAdmin,
+                u.Id, u.TenantId, u.Username, u.Email, u.FullName, u.IsActive, u.IsPlatformAdmin,
+                u.ExtraPermissions, u.RevokedPermissions,
                 Roles = u.UserRoles.Select(ur => new RoleDto
                 {
                     Id = ur.Role.Id,
@@ -80,6 +87,15 @@ public class UserAdminService : IUserAdminService
                 }).ToList()
             })
             .ToListAsync(ct);
+
+        return rows.Select(u => new UserDto
+        {
+            Id = u.Id, TenantId = u.TenantId, Username = u.Username, Email = u.Email, FullName = u.FullName,
+            IsActive = u.IsActive, IsPlatformAdmin = u.IsPlatformAdmin, Roles = u.Roles,
+            ExtraPermissions = SplitCsv(u.ExtraPermissions),
+            RevokedPermissions = SplitCsv(u.RevokedPermissions),
+        }).ToList();
+    }
 
     public async Task<UserDto> UpdateUserAsync(int tenantId, int userId, UpdateUserRequestDto dto, CancellationToken ct = default)
     {
@@ -92,6 +108,8 @@ public class UserAdminService : IUserAdminService
         if (dto.Email is not null) user.Email = dto.Email;
         if (dto.IsActive.HasValue) user.IsActive = dto.IsActive.Value;
         if (!string.IsNullOrWhiteSpace(dto.NewPassword)) user.PasswordHash = _hasher.Hash(dto.NewPassword);
+        if (dto.ExtraPermissions is not null) user.ExtraPermissions = JoinCsv(dto.ExtraPermissions);
+        if (dto.RevokedPermissions is not null) user.RevokedPermissions = JoinCsv(dto.RevokedPermissions);
 
         if (dto.RoleIds is not null)
         {

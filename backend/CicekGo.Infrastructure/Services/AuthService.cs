@@ -29,6 +29,18 @@ public class AuthService : IAuthService
     private static string HashToken(string raw) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(raw)));
 
+    private static IEnumerable<string> SplitCsv(string? s) =>
+        string.IsNullOrWhiteSpace(s) ? Array.Empty<string>() : s.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    /// <summary>Rol izinleri + kullanıcıya özel ekstra/kaldırılan izinleri birleştirir.</summary>
+    private static List<string> EffectivePermissions(IEnumerable<string> rolePerms, string? extraCsv, string? revokedCsv)
+    {
+        var set = new HashSet<string>(rolePerms);
+        foreach (var p in SplitCsv(extraCsv)) set.Add(p);
+        foreach (var p in SplitCsv(revokedCsv)) set.Remove(p);
+        return set.ToList();
+    }
+
     /// <summary>Kullanıcı için yeni refresh token üretir, hash'ini saklar, ham token'ı döndürür.</summary>
     private async Task<string> IssueRefreshTokenAsync(int userId, CancellationToken ct)
     {
@@ -63,10 +75,10 @@ public class AuthService : IAuthService
         var roles = user.UserRoles.Select(ur => ur.Role).ToList();
         var roleDtos = roles.Select(r => new RoleItemDto { Id = r.Id, Name = r.Name }).ToList();
 
-        var perms = roles
+        var rolePerms = roles
             .SelectMany(r => r.RolePermissions.Select(rp => rp.Permission.Code))
-            .Distinct()
-            .ToList();
+            .Distinct();
+        var perms = EffectivePermissions(rolePerms, user.ExtraPermissions, user.RevokedPermissions);
 
         var token = _jwt.Create(user.Id, user.Username, user.TenantId, user.IsPlatformAdmin,
             roleDtos.Select(r => r.Name), perms);
@@ -117,7 +129,8 @@ public class AuthService : IAuthService
             throw new UnauthorizedException("user not available");
 
         var roles = user.UserRoles.Select(ur => ur.Role).ToList();
-        var perms = roles.SelectMany(r => r.RolePermissions.Select(rp => rp.Permission.Code)).Distinct().ToList();
+        var rolePerms = roles.SelectMany(r => r.RolePermissions.Select(rp => rp.Permission.Code)).Distinct();
+        var perms = EffectivePermissions(rolePerms, user.ExtraPermissions, user.RevokedPermissions);
         var access = _jwt.Create(user.Id, user.Username, user.TenantId, user.IsPlatformAdmin,
             roles.Select(r => r.Name), perms);
 

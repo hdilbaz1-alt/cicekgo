@@ -15,6 +15,10 @@ public class User
     public bool IsActive { get; set; } = true;
     public bool IsPlatformAdmin { get; set; }
 
+    // Kullanıcıya özel izin ayarı (rol izinlerine göre): ekstra verilen / kaldırılan izin kodları (CSV).
+    public string? ExtraPermissions { get; set; }
+    public string? RevokedPermissions { get; set; }
+
     public DateTime CreatedAtUtc { get; set; }
     public DateTime? LastLoginAtUtc { get; set; }
     public DateTime? DeletedAtUtc { get; set; }            // self-servis hesap silme (soft)

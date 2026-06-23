@@ -41,6 +41,8 @@ public class CreateUserRequestDto
     public string? Email { get; set; }
     public string? FullName { get; set; }
     public List<int> RoleIds { get; set; } = new();
+    public List<string>? ExtraPermissions { get; set; }      // rol dışı ek izinler
+    public List<string>? RevokedPermissions { get; set; }    // rol verse bile kaldırılan izinler
 }
 
 public class UpdateUserRequestDto
@@ -50,6 +52,8 @@ public class UpdateUserRequestDto
     public bool? IsActive { get; set; }
     public string? NewPassword { get; set; }          // doluysa şifre sıfırlanır
     public List<int>? RoleIds { get; set; }           // null değilse roller değiştirilir (yetki kısma)
+    public List<string>? ExtraPermissions { get; set; }
+    public List<string>? RevokedPermissions { get; set; }
 }
 
 public class PermissionDto
@@ -68,6 +72,8 @@ public class UserDto
     public bool IsActive { get; set; }
     public bool IsPlatformAdmin { get; set; }
     public List<RoleDto> Roles { get; set; } = new();
+    public List<string> ExtraPermissions { get; set; } = new();
+    public List<string> RevokedPermissions { get; set; } = new();
 }
 
 public class RoleDto

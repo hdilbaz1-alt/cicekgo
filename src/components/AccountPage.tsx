@@ -62,6 +62,7 @@ export default function AccountPage({ onNavigate }: { onNavigate?: (page: string
 
   // Firma ayarları
   const canManage = can(P.settingsManage);
+  const canViewLicense = can(P.licenseView);
   const [coName, setCoName] = useState(''); const [coLogo, setCoLogo] = useState<string | null>(null);
   const [coLoaded, setCoLoaded] = useState(false); const [savingCo, setSavingCo] = useState(false);
   const loadCompany = async () => {
@@ -99,7 +100,7 @@ export default function AccountPage({ onNavigate }: { onNavigate?: (page: string
         <Tabs defaultValue="account">
           <TabsList>
             <TabsTrigger value="account"><UserIcon className="w-4 h-4" /> Hesap Bilgileri</TabsTrigger>
-            <TabsTrigger value="license"><BadgeCheck className="w-4 h-4" /> Lisans Bilgileri</TabsTrigger>
+            {canViewLicense && <TabsTrigger value="license"><BadgeCheck className="w-4 h-4" /> Lisans Bilgileri</TabsTrigger>}
             <TabsTrigger value="user"><ShieldCheck className="w-4 h-4" /> Kullanıcı Bilgileri</TabsTrigger>
             <TabsTrigger value="password"><KeyRound className="w-4 h-4" /> Şifre Değiştir</TabsTrigger>
             {canManage && <TabsTrigger value="company"><Building2 className="w-4 h-4" /> Firma Ayarları</TabsTrigger>}
@@ -138,7 +139,7 @@ export default function AccountPage({ onNavigate }: { onNavigate?: (page: string
           </TabsContent>
 
           {/* Lisans Bilgileri */}
-          <TabsContent value="license">
+          {canViewLicense && <TabsContent value="license">
             <Card className="p-6 max-w-[560px]">
               <h3 className="font-semibold text-slate-900 mb-2">Lisans Bilgilerim</h3>
               <InfoRow Icon={BadgeCheck} label="Lisans Durumu">
@@ -151,7 +152,7 @@ export default function AccountPage({ onNavigate }: { onNavigate?: (page: string
               </InfoRow>
               <InfoRow Icon={Building2} label="Firma">{me?.tenantName || '—'}</InfoRow>
             </Card>
-          </TabsContent>
+          </TabsContent>}
 
           {/* Kullanıcı Bilgileri */}
           <TabsContent value="user">
