@@ -7,6 +7,7 @@ using CicekGo.Infrastructure.Configuration;
 using CicekGo.Infrastructure.Seed;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -19,6 +20,14 @@ builder.Host.UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configurati
 
 // ===== Infrastructure (DB, servisler, JWT/hasher) =====
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// ===== Data Protection (SMTP parolası şifreleme) — anahtarlar kalıcı dizinde =====
+var dpKeysPath = builder.Configuration["DataProtection:KeysPath"]
+    ?? Path.Combine(builder.Environment.ContentRootPath, "dp-keys");
+Directory.CreateDirectory(dpKeysPath);
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(dpKeysPath))
+    .SetApplicationName("CicekGo");
 
 // ===== JWT Authentication =====
 var jwt = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()

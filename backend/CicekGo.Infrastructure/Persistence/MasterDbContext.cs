@@ -20,6 +20,7 @@ public class MasterDbContext : DbContext
     public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<EmailOutbox> EmailOutbox => Set<EmailOutbox>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -137,6 +138,19 @@ public class MasterDbContext : DbContext
             e.Property(x => x.Url).HasMaxLength(500);
             e.Property(x => x.Type).HasMaxLength(50);
             e.HasIndex(x => new { x.UserId, x.CreatedAtUtc });
+        });
+
+        b.Entity<EmailOutbox>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.OrderCode).IsRequired().HasMaxLength(64);
+            e.Property(x => x.Audience).IsRequired().HasMaxLength(16);
+            e.Property(x => x.ToEmail).IsRequired().HasMaxLength(256);
+            e.Property(x => x.Subject).IsRequired().HasMaxLength(400);
+            e.Property(x => x.Status).IsRequired().HasMaxLength(16);
+            e.Property(x => x.DedupKey).IsRequired().HasMaxLength(200);
+            e.HasIndex(x => x.DedupKey).IsUnique();
+            e.HasIndex(x => new { x.Status, x.NextAttemptUtc });
         });
     }
 }

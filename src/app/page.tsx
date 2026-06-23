@@ -28,6 +28,7 @@ import AddressSettingsPage from '@/components/AddressSettingsPage';
 import NonCariPage from '@/components/NonCariPage';
 import NotificationsPage from '@/components/NotificationsPage';
 import AccountPage from '@/components/AccountPage';
+import EmailNotificationsPage from '@/components/EmailNotificationsPage';
 import MorePage from '@/components/MorePage';
 import CommandPalette from '@/components/CommandPalette';
 import { Search } from 'lucide-react';
@@ -44,6 +45,7 @@ const PAGE_TITLES: Record<string, string> = {
   units: 'Birim Ayarları', 'store-hours': 'Çalışma Saatleri', 'order-status': 'Sipariş Durumları',
   'print-templates': 'Yazdırma Şablonları', 'payment-methods': 'Ödeme Yöntemleri',
   'address-settings': 'Varsayılan Adres', notifications: 'Bildirimler', account: 'Hesap Ayarları',
+  'email-notifications': 'E-posta Bildirimleri',
 };
 
 export default function HomePage() {
@@ -168,6 +170,8 @@ export default function HomePage() {
         return <NotificationsPage onNavigate={handlePageChange} />;
       case 'account':
         return <AccountPage onNavigate={handlePageChange} />;
+      case 'email-notifications':
+        return <EmailNotificationsPage />;
       case 'more':
         return <MorePage onNavigate={handlePageChange} onLogout={handleLogout} />;
       default:

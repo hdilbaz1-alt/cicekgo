@@ -54,6 +54,7 @@ public static class Permissions
     public const string AuditView = "audit.view";
     public const string NotificationsSend = "notifications.send";   // toplu push bildirimi gönderme
     public const string LicenseView = "license.view";               // lisans bilgisini görüntüleme
+    public const string EmailManage = "email.manage";               // e-posta bildirim modülü (şablon/ayar/tetikleyici)
 
     // Platform / super-admin
     public const string TenantsManage = "tenants.manage";
@@ -98,6 +99,7 @@ public static class Permissions
         [AuditView] = "Audit log görüntüleme",
         [NotificationsSend] = "Toplu anlık bildirim (push) gönderme",
         [LicenseView] = "Lisans bilgisini görüntüleme",
+        [EmailManage] = "E-posta bildirim modülü yönetimi",
         [TenantsManage] = "Platform: firma ve veritabanı yönetimi",
     };
 
@@ -113,7 +115,7 @@ public static class Permissions
         FinanceViewGeneralLedger, FinanceCreatePayment, FinanceViewCash,
         ProductsView, ProductsManage, StockView, StockManage,
         ReportsViewSales, ReportsViewCustomers, ReportsViewProducts, ReportsViewCash, ReportsViewCouriers,
-        UsersManage, SettingsManage, AuditView, NotificationsSend, LicenseView,
+        UsersManage, SettingsManage, AuditView, NotificationsSend, LicenseView, EmailManage,
     };
 
     /// <summary>Satış personeli: sipariş + müşteri, sınırlı cari.</summary>

@@ -34,8 +34,10 @@ public class Order
     // Gönderici / Alıcı
     public string? SenderName { get; set; }
     public string? SenderPhone { get; set; }
+    public string? SenderEmail { get; set; }       // e-posta bildirimi için (opsiyonel)
     public string? RecipientName { get; set; }
     public string? RecipientPhone { get; set; }
+    public string? RecipientEmail { get; set; }    // e-posta bildirimi için (opsiyonel)
     public string? RecipientAddress { get; set; }      // kanonik tam adres (hesaplanan): "[Açık Adres] İLÇE/İL"
 
     // Yapısal teslimat adresi (İl/İlçe zorunlu, Açık Adres serbest)

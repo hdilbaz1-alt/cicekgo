@@ -84,6 +84,7 @@ public static class DependencyInjection
         services.AddScoped<Application.Audit.IAuditService, AuditService>();
         services.AddScoped<Application.Printing.IPrintTemplateService, PrintTemplateService>();
         services.AddScoped<Application.Account.IAccountService, AccountService>();
+        services.AddScoped<Application.Email.IEmailSettingsService, EmailSettingsService>();
 
         // Seeder + tenant migrator
         services.AddScoped<MasterSeeder>();

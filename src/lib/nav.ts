@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, ClipboardList, Truck, Users, UsersRound, BookText, Wallet,
   BarChart3, Package, UserCog, Trash2, ScrollText, Tag, Ruler, Clock, ListChecks,
-  Printer, RotateCcw, MapPin, Bell, type LucideIcon,
+  Printer, RotateCcw, MapPin, Bell, Mail, type LucideIcon,
 } from 'lucide-react';
 import { P } from './permissions';
 
@@ -33,6 +33,7 @@ export const NAV_GROUPS: NavGroup[] = [
     { id: 'users', label: 'Kullanıcılar', icon: UserCog, perm: [P.usersManage] },
     { id: 'deleted-orders', label: 'Silinen Siparişler', icon: Trash2, perm: [P.ordersViewDeleted] },
     { id: 'audit-log', label: 'İşlem Kayıtları', icon: ScrollText, perm: [P.auditView] },
+    { id: 'email-notifications', label: 'E-posta Bildirimleri', icon: Mail, perm: [P.emailManage] },
   ]},
   { group: 'Ayarlar', items: [
     { id: 'order-codes', label: 'Sipariş Kodları', icon: Tag, perm: [P.settingsManage] },

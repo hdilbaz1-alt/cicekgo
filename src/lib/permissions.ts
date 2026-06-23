@@ -64,4 +64,5 @@ export const P = {
   auditView: 'audit.view',
   notificationsSend: 'notifications.send',
   licenseView: 'license.view',
+  emailManage: 'email.manage',
 } as const;

@@ -54,6 +54,8 @@ export const API_CONFIG = {
     ACCOUNT_ME: '/api/Account/me',
     ACCOUNT_PROFILE: '/api/Account/profile',
     ACCOUNT_CHANGE_PASSWORD: '/api/Account/change-password',
+    EMAIL_SETTINGS: '/api/Email/settings',
+    EMAIL_SETTINGS_TEST: '/api/Email/settings/test',
     PRODUCT_TYPE_LIST: '/api/ProductType/list',
     PRODUCT_TYPE_ADD: '/api/ProductType/add',
     PRODUCT_TYPE_UPDATE: '/api/ProductType/update',

@@ -5,7 +5,7 @@ import { canAny, P } from '@/lib/permissions';
 import {
   LayoutDashboard, ClipboardList, Truck, Users, UsersRound, BookText, Wallet,
   BarChart3, Package, UserCog, Trash2, ScrollText, Settings, ChevronRight,
-  ChevronsLeft, Tag, Ruler, Clock, ListChecks, Printer, RotateCcw, MapPin, Bell,
+  ChevronsLeft, Tag, Ruler, Clock, ListChecks, Printer, RotateCcw, MapPin, Bell, Mail,
   ChevronsUpDown, User as UserIcon, LogOut, type LucideIcon,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -41,6 +41,7 @@ const ITEMS: Item[] = [
   { id: 'users', label: 'Kullanıcılar', icon: UserCog, perm: [P.usersManage], group: 'Yönetim' },
   { id: 'deleted-orders', label: 'Silinen Siparişler', icon: Trash2, perm: [P.ordersViewDeleted], group: 'Yönetim' },
   { id: 'audit-log', label: 'İşlem Kayıtları', icon: ScrollText, perm: [P.auditView], group: 'Yönetim' },
+  { id: 'email-notifications', label: 'E-posta Bildirimleri', icon: Mail, perm: [P.emailManage], group: 'Yönetim' },
   {
     id: 'settings', label: 'Ayarlar', icon: Settings, perm: [P.settingsManage], group: 'Yönetim',
     submenu: [

@@ -32,6 +32,9 @@ public class TenantDbContext : DbContext
     public DbSet<Expense> Expenses => Set<Expense>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<Refund> Refunds => Set<Refund>();
+    public DbSet<EmailSettings> EmailSettings => Set<EmailSettings>();
+    public DbSet<EmailTemplate> EmailTemplates => Set<EmailTemplate>();
+    public DbSet<OrderStatusEmailTrigger> OrderStatusEmailTriggers => Set<OrderStatusEmailTrigger>();
 
     private const string Money = "numeric(18,2)";
 
@@ -308,6 +311,35 @@ public class TenantDbContext : DbContext
             e.Property(x => x.IpAddress).HasMaxLength(60);
             e.HasIndex(x => x.CreatedAt);
             e.HasIndex(x => x.ActionType);
+        });
+
+        b.Entity<EmailSettings>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.FromName).IsRequired().HasMaxLength(200);
+            e.Property(x => x.FromEmail).IsRequired().HasMaxLength(256);
+            e.Property(x => x.SmtpHost).IsRequired().HasMaxLength(256);
+            e.Property(x => x.SmtpSecurity).IsRequired().HasMaxLength(16);
+            e.Property(x => x.SmtpUsername).IsRequired().HasMaxLength(256);
+            e.Property(x => x.ImapHost).HasMaxLength(256);
+            e.Property(x => x.ImapUsername).HasMaxLength(256);
+        });
+
+        b.Entity<EmailTemplate>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Name).IsRequired().HasMaxLength(200);
+            e.Property(x => x.Subject).IsRequired().HasMaxLength(300);
+            e.Property(x => x.DesignJson).HasColumnType("jsonb");
+            e.HasIndex(x => x.Name);
+        });
+
+        b.Entity<OrderStatusEmailTrigger>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.OrderStatusId).IsUnique();
+            e.HasOne(x => x.OrderStatus).WithMany().HasForeignKey(x => x.OrderStatusId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Template).WithMany().HasForeignKey(x => x.TemplateId).OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

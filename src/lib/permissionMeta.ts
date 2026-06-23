@@ -47,6 +47,7 @@ export const PERMISSION_META: PermMeta[] = [
   { code: 'audit.view', label: 'İşlem kayıtlarını görüntüleme', group: 'Yönetim' },
   { code: 'notifications.send', label: 'Toplu bildirim gönderme', group: 'Yönetim' },
   { code: 'license.view', label: 'Lisans bilgisini görüntüleme', group: 'Yönetim' },
+  { code: 'email.manage', label: 'E-posta bildirim modülü yönetimi', group: 'Yönetim' },
   { code: 'tenants.manage', label: 'Platform: firma ve veritabanı yönetimi', group: 'Platform' },
 ];
 
