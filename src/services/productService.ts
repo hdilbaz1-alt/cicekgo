@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api';
 import { getApiUrl, getEndpoint } from '@/config/api';
 
 export interface ProductDto {
@@ -65,50 +66,50 @@ const STOCK = () => getApiUrl(getEndpoint('STOCK_MOVEMENTS'));
 export const productService = {
   async list(search?: string): Promise<ProductDto[]> {
     const url = `${getApiUrl(getEndpoint('PRODUCT_LIST'))}${search ? `?search=${encodeURIComponent(search)}` : ''}`;
-    return handle<ProductDto[]>(await fetch(url, { headers: authHeaders() }));
+    return handle<ProductDto[]>(await apiFetch(url, { headers: authHeaders() }));
   },
   async create(p: Partial<ProductDto>): Promise<number> {
-    return handle<number>(await fetch(PRODUCT(), { method: 'POST', headers: authHeaders(), body: JSON.stringify(p) }));
+    return handle<number>(await apiFetch(PRODUCT(), { method: 'POST', headers: authHeaders(), body: JSON.stringify(p) }));
   },
   async update(id: number, p: Partial<ProductDto>): Promise<void> {
-    await handle<string>(await fetch(`${PRODUCT()}/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(p) }));
+    await handle<string>(await apiFetch(`${PRODUCT()}/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(p) }));
   },
   async remove(id: number): Promise<void> {
-    await handle<string>(await fetch(`${PRODUCT()}/${id}`, { method: 'DELETE', headers: authHeaders() }));
+    await handle<string>(await apiFetch(`${PRODUCT()}/${id}`, { method: 'DELETE', headers: authHeaders() }));
   },
 
   async categories(): Promise<ProductCategoryDto[]> {
-    return handle<ProductCategoryDto[]>(await fetch(CATEGORIES(), { headers: authHeaders() }));
+    return handle<ProductCategoryDto[]>(await apiFetch(CATEGORIES(), { headers: authHeaders() }));
   },
   async createCategory(name: string): Promise<number> {
-    return handle<number>(await fetch(CATEGORIES(), { method: 'POST', headers: authHeaders(), body: JSON.stringify({ name, isActive: true }) }));
+    return handle<number>(await apiFetch(CATEGORIES(), { method: 'POST', headers: authHeaders(), body: JSON.stringify({ name, isActive: true }) }));
   },
   async deleteCategory(id: number): Promise<void> {
-    await handle<string>(await fetch(`${CATEGORIES()}/${id}`, { method: 'DELETE', headers: authHeaders() }));
+    await handle<string>(await apiFetch(`${CATEGORIES()}/${id}`, { method: 'DELETE', headers: authHeaders() }));
   },
 
   async movements(productId?: number): Promise<StockMovementDto[]> {
     const url = `${STOCK()}${productId ? `?productId=${productId}` : ''}`;
-    return handle<StockMovementDto[]>(await fetch(url, { headers: authHeaders() }));
+    return handle<StockMovementDto[]>(await apiFetch(url, { headers: authHeaders() }));
   },
   async addMovement(m: { productId: number; movementType: string; quantity: number; description?: string }): Promise<number> {
-    return handle<number>(await fetch(STOCK(), { method: 'POST', headers: authHeaders(), body: JSON.stringify(m) }));
+    return handle<number>(await apiFetch(STOCK(), { method: 'POST', headers: authHeaders(), body: JSON.stringify(m) }));
   },
   async critical(): Promise<ProductDto[]> {
-    return handle<ProductDto[]>(await fetch(getApiUrl(getEndpoint('STOCK_CRITICAL')), { headers: authHeaders() }));
+    return handle<ProductDto[]>(await apiFetch(getApiUrl(getEndpoint('STOCK_CRITICAL')), { headers: authHeaders() }));
   },
 
   // ---- Birimler ----
   async units(): Promise<UnitDto[]> {
-    return handle<UnitDto[]>(await fetch(getApiUrl(getEndpoint('UNIT_LIST')), { headers: authHeaders() }));
+    return handle<UnitDto[]>(await apiFetch(getApiUrl(getEndpoint('UNIT_LIST')), { headers: authHeaders() }));
   },
   async createUnit(name: string, sortOrder = 0): Promise<number> {
-    return handle<number>(await fetch(getApiUrl(getEndpoint('UNIT')), { method: 'POST', headers: authHeaders(), body: JSON.stringify({ name, sortOrder, isActive: true }) }));
+    return handle<number>(await apiFetch(getApiUrl(getEndpoint('UNIT')), { method: 'POST', headers: authHeaders(), body: JSON.stringify({ name, sortOrder, isActive: true }) }));
   },
   async updateUnit(id: number, req: { name: string; sortOrder: number; isActive: boolean }): Promise<void> {
-    await handle<string>(await fetch(`${getApiUrl(getEndpoint('UNIT'))}/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(req) }));
+    await handle<string>(await apiFetch(`${getApiUrl(getEndpoint('UNIT'))}/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(req) }));
   },
   async deleteUnit(id: number): Promise<void> {
-    await handle<string>(await fetch(`${getApiUrl(getEndpoint('UNIT'))}/${id}`, { method: 'DELETE', headers: authHeaders() }));
+    await handle<string>(await apiFetch(`${getApiUrl(getEndpoint('UNIT'))}/${id}`, { method: 'DELETE', headers: authHeaders() }));
   },
 };

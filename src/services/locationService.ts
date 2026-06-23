@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api';
 import { getApiUrl, getEndpoint } from '@/config/api';
 
 export interface Province {
@@ -30,7 +31,7 @@ export const locationService = {
     const cached = readCache<Province[]>(PROV_KEY);
     if (cached && cached.length) return cached;
     try {
-      const res = await fetch(getApiUrl(getEndpoint('LOCATION_PROVINCES')), { headers: auth() });
+      const res = await apiFetch(getApiUrl(getEndpoint('LOCATION_PROVINCES')), { headers: auth() });
       const b = await res.json();
       const list = (b.success ? (b.data as Province[]) : []) || [];
       if (list.length) writeCache(PROV_KEY, list);
@@ -44,7 +45,7 @@ export const locationService = {
     const cached = readCache<District[]>(distKey(provinceId));
     if (cached && cached.length) return cached;
     try {
-      const res = await fetch(`${getApiUrl(getEndpoint('LOCATION_DISTRICTS'))}?provinceId=${provinceId}`, { headers: auth() });
+      const res = await apiFetch(`${getApiUrl(getEndpoint('LOCATION_DISTRICTS'))}?provinceId=${provinceId}`, { headers: auth() });
       const b = await res.json();
       const list = (b.success ? (b.data as District[]) : []) || [];
       if (list.length) writeCache(distKey(provinceId), list);

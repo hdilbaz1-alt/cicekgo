@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { orderService, OrderItem } from '@/services/orderService';
@@ -60,7 +61,7 @@ export default function CourierPanelPage() {
     (async () => {
       try {
         const token = localStorage.getItem('token');
-        const r = await fetch(getApiUrl(getEndpoint('ORDER_STATUS_LIST')), { headers: { Authorization: `Bearer ${token}` } });
+        const r = await apiFetch(getApiUrl(getEndpoint('ORDER_STATUS_LIST')), { headers: { Authorization: `Bearer ${token}` } });
         const b = await r.json();
         const names = (b.data || []).map((s: { statusName: string }) => s.statusName);
         if (names.length) setStatuses(names);
@@ -120,7 +121,7 @@ export default function CourierPanelPage() {
             {loading ? <SkeletonList rows={5} /> : visible.length === 0 ? (
               <EmptyState icon={<Truck className="w-7 h-7" />} title="Teslimat yok" hint={filter === 'open' ? 'Bekleyen teslimatın yok.' : 'Sana atanmış teslimat bulunmuyor.'} />
             ) : (
-              <div className="space-y-2.5 lg:max-h-[70vh] lg:overflow-y-auto lg:pr-1">
+              <div className="space-y-2.5 lg:max-h-[70dvh] lg:overflow-y-auto lg:pr-1">
                 {visible.map((o) => (
                   <button key={o.orderCode} onClick={() => pick(o)}
                     onContextMenu={(e) => { e.preventDefault(); setMenu({ x: e.clientX, y: e.clientY, order: o }); }}

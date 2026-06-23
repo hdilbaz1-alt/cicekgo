@@ -31,6 +31,12 @@ body {
     font-family: 'Inter', system-ui, sans-serif;
   }
 
+  /* Mobilde yatay taşmayı (horizontal scroll) kökten engelle */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
   /* Rakamlar hizalı görünsün (para sütunları) */
   body {
     font-variant-numeric: tabular-nums;

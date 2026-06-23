@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { orderService, OrderItem, OrderItemLine } from '@/services/orderService';
@@ -129,7 +130,7 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
       // statuses
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(getApiUrl(getEndpoint('ORDER_STATUS_LIST')), { headers: { Authorization: `Bearer ${token}` } });
+        const res = await apiFetch(getApiUrl(getEndpoint('ORDER_STATUS_LIST')), { headers: { Authorization: `Bearer ${token}` } });
         const body = await res.json();
         const names = (body.data || []).map((s: { statusName: string }) => s.statusName);
         setStatuses(names.length ? names : ['Yeni', 'Hazırlanıyor', 'Hazır', 'Kuryeye Verildi', 'Teslim Edildi', 'İptal Edildi']);
@@ -138,7 +139,7 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
       // Teslimat saat aralıkları (mağaza çalışma saatlerinden)
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(getApiUrl(getEndpoint('STORE_SETTINGS')), { headers: { Authorization: `Bearer ${token}` } });
+        const res = await apiFetch(getApiUrl(getEndpoint('STORE_SETTINGS')), { headers: { Authorization: `Bearer ${token}` } });
         const body = await res.json();
         setSlots(body.data?.deliverySlots || []);
       } catch { setSlots([]); }
@@ -269,7 +270,7 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
         // Cariye bağlı ek tahsilat → kalanı düşer + cari alacak + kasa kaydı
         if (extra > 0 && cid) {
           const token = localStorage.getItem('token');
-          await fetch(getApiUrl(getEndpoint('CUSTOMER_LEDGER_ORDER_PAYMENT')), {
+          await apiFetch(getApiUrl(getEndpoint('CUSTOMER_LEDGER_ORDER_PAYMENT')), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ customerId: cid, orderCode: order.orderCode, amount: extra, description: '', paymentMethodId: Number(methodId) || null, paymentDate: new Date().toISOString() }),
@@ -287,7 +288,7 @@ export default function OrderFormModal({ isOpen, onClose, onSuccess, order }: {
   return (
     <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl my-4 max-h-[94vh] overflow-y-auto">
+      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl my-4 max-h-[94dvh] overflow-y-auto">
         <div className="sticky top-0 bg-white/90 backdrop-blur border-b border-slate-100 px-6 py-4 flex items-center justify-between rounded-t-3xl z-10">
           <h3 className="text-lg font-bold text-slate-900">{isEdit ? `Sipariş Düzenle · ${order?.orderCode}` : 'Yeni Sipariş'}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl leading-none">×</button>

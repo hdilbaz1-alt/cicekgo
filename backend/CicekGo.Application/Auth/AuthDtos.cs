@@ -15,6 +15,7 @@ public class RoleItemDto
 public class LoginResultDto
 {
     public string Token { get; set; } = default!;
+    public string RefreshToken { get; set; } = default!;   // ham refresh token (istemci saklar)
     public DateTime ExpiresAt { get; set; }
     public int UserId { get; set; }
     public string UserName { get; set; } = default!;
@@ -22,4 +23,16 @@ public class LoginResultDto
     public List<RoleItemDto> Roles { get; set; } = new();
     public List<RoleItemDto> SpecialRoles { get; set; } = new();  // permission-based modelde boş kalır (frontend uyumu)
     public List<string> Permissions { get; set; } = new();
+}
+
+public class RefreshRequestDto
+{
+    public string RefreshToken { get; set; } = default!;
+}
+
+public class RefreshResultDto
+{
+    public string Token { get; set; } = default!;
+    public string RefreshToken { get; set; } = default!;
+    public DateTime ExpiresAt { get; set; }
 }

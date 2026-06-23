@@ -41,7 +41,7 @@ public class UserAdminService : IUserAdminService
             TenantId = tenantId,
             Username = dto.Username.Trim(),
             Email = dto.Email,
-            FullName = dto.FullName ?? dto.Username,
+            FullName = string.IsNullOrWhiteSpace(dto.FullName) ? dto.Username.Trim() : dto.FullName!.Trim(),
             PasswordHash = _hasher.Hash(dto.Password),
             IsActive = true,
             IsPlatformAdmin = false,

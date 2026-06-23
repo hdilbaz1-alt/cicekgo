@@ -8,6 +8,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   data: {
     token: string;
+    refreshToken: string;
     expiresAt: string;
     userId: number;
     userName: string;
@@ -54,9 +55,20 @@ class AuthService {
     return this.token;
   }
 
+  getRefreshToken(): string | null {
+    return typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+  }
+
+  /** Access + refresh token'ı birlikte günceller (login & refresh sonrası). */
+  setSession({ token, refreshToken }: { token: string; refreshToken?: string | null }) {
+    this.setToken(token);
+    if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+  }
+
   clearToken() {
     this.token = null;
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     localStorage.removeItem('tenantInfo');
   }
@@ -78,7 +90,7 @@ class AuthService {
       const data: LoginResponse = await response.json();
       
       if (data.success) {
-        this.setToken(data.data.token);
+        this.setSession({ token: data.data.token, refreshToken: data.data.refreshToken });
         localStorage.setItem('user', JSON.stringify({
           userId: data.data.userId,
           userName: data.data.userName,

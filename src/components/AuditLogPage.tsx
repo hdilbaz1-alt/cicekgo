@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api';
 
 import { useCallback, useEffect, useState } from 'react';
 import { BASE_URL, ENDPOINTS } from '@/config/api';
@@ -55,7 +56,7 @@ export default function AuditLogPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${BASE_URL}${ENDPOINTS.AUDIT_LIST}`, {
+      const res = await apiFetch(`${BASE_URL}${ENDPOINTS.AUDIT_LIST}`, {
         method: 'POST', headers: headers(),
         body: JSON.stringify({ ...range(), actionType: action || null, search: search || null, page, pageSize }),
       });

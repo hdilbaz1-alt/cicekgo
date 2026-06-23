@@ -135,8 +135,9 @@ public class ReportService : IReportService
             }).ToListAsync(ct);
 
         var ids = rows.Select(r => r.CourierId).ToList();
-        var names = await _master.Users.AsNoTracking().Where(u => ids.Contains(u.Id))
-            .ToDictionaryAsync(u => u.Id, u => u.FullName ?? u.Username, ct);
+        var urows = await _master.Users.AsNoTracking().Where(u => ids.Contains(u.Id))
+            .Select(u => new { u.Id, u.FullName, u.Username }).ToListAsync(ct);
+        var names = urows.ToDictionary(u => u.Id, u => string.IsNullOrWhiteSpace(u.FullName) ? u.Username : u.FullName!);
 
         return rows.Select(r => new CourierRowDto
         {

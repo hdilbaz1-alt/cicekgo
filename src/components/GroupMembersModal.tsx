@@ -79,7 +79,7 @@ export default function GroupMembersModal({ isOpen, onClose, groupName, descript
 				</div>
 
 				{/* Members list */}
-				<div className="max-h-[60vh] overflow-y-auto p-2 sm:p-4">
+				<div className="max-h-[60dvh] overflow-y-auto p-2 sm:p-4">
 					<ul className="divide-y divide-gray-100 bg-white rounded-xl">
 						{filteredMembers.map((m) => (
 							<li key={m.id} className="flex items-center justify-between px-4 py-3">

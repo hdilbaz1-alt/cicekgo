@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api';
 import { getApiUrl, getEndpoint } from '@/config/api';
 
 export interface GeneralSummary {
@@ -30,18 +31,18 @@ const qs = (from?: string, to?: string) => {
 
 export const financeService = {
   async summary(from?: string, to?: string): Promise<GeneralSummary> {
-    return handle<GeneralSummary>(await fetch(getApiUrl(getEndpoint('CASH_SUMMARY')) + qs(from, to), { headers: authHeaders() }));
+    return handle<GeneralSummary>(await apiFetch(getApiUrl(getEndpoint('CASH_SUMMARY')) + qs(from, to), { headers: authHeaders() }));
   },
   async cashMovements(from?: string, to?: string): Promise<CashMovement[]> {
-    return handle<CashMovement[]>(await fetch(getApiUrl(getEndpoint('CASH_MOVEMENTS')) + qs(from, to), { headers: authHeaders() }));
+    return handle<CashMovement[]>(await apiFetch(getApiUrl(getEndpoint('CASH_MOVEMENTS')) + qs(from, to), { headers: authHeaders() }));
   },
   async expenses(from?: string, to?: string): Promise<Expense[]> {
-    return handle<Expense[]>(await fetch(getApiUrl(getEndpoint('EXPENSE_LIST')) + qs(from, to), { headers: authHeaders() }));
+    return handle<Expense[]>(await apiFetch(getApiUrl(getEndpoint('EXPENSE_LIST')) + qs(from, to), { headers: authHeaders() }));
   },
   async addExpense(e: { category: string; amount: number; paymentMethod?: string; description?: string }): Promise<number> {
-    return handle<number>(await fetch(getApiUrl(getEndpoint('EXPENSE')), { method: 'POST', headers: authHeaders(), body: JSON.stringify(e) }));
+    return handle<number>(await apiFetch(getApiUrl(getEndpoint('EXPENSE')), { method: 'POST', headers: authHeaders(), body: JSON.stringify(e) }));
   },
   async deleteExpense(id: number): Promise<void> {
-    await handle<string>(await fetch(`${getApiUrl(getEndpoint('EXPENSE'))}/${id}`, { method: 'DELETE', headers: authHeaders() }));
+    await handle<string>(await apiFetch(`${getApiUrl(getEndpoint('EXPENSE'))}/${id}`, { method: 'DELETE', headers: authHeaders() }));
   },
 };

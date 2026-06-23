@@ -53,8 +53,9 @@ export default function LoginPage() {
         const permissions: string[] = data.data.permissions || [];
         const isPlatformAdmin = !data.data.tenantId || permissions.includes('tenants.manage');
 
-        // Token'ı kaydet
+        // Token'ı kaydet (+ refresh token)
         localStorage.setItem('token', data.data.token);
+        if (data.data.refreshToken) localStorage.setItem('refreshToken', data.data.refreshToken);
         localStorage.setItem('user', JSON.stringify({
           userId: data.data.userId,
           userName: data.data.userName,

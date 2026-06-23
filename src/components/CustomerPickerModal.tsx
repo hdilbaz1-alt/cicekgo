@@ -22,9 +22,9 @@ export default function CustomerPickerModal({ onClose, onPick }: {
   useEffect(() => { const t = setTimeout(() => load(q), 300); return () => clearTimeout(t); }, [q]);
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center sm:p-4 overflow-y-auto">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md sm:my-8 max-h-[85vh] flex flex-col overflow-hidden">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md sm:my-8 max-h-[85dvh] flex flex-col overflow-hidden">
         <div className="p-5 border-b border-slate-100">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-bold text-slate-900">Müşteri Seç</h3>

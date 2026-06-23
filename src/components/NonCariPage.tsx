@@ -112,7 +112,7 @@ export default function NonCariPage() {
                   </div>
                 </div>
 
-                <div className="overflow-y-auto max-h-[55vh] lg:max-h-[60vh]">
+                <div className="overflow-y-auto max-h-[55dvh] lg:max-h-[60dvh]">
                   {ledgerLoading ? <div className="p-3 space-y-2">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton h-12 rounded-xl" />)}</div>
                     : (ledger?.movements.length ?? 0) === 0 ? <div className="p-8 text-center text-slate-400 text-sm">Henüz giriş/çıkış yok.</div>
                       : (
@@ -194,7 +194,7 @@ function AmountModal({ title, subtitle, confirmLabel, tone, defaultAmount, onClo
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-sm max-h-[92vh] overflow-y-auto p-6 sm:p-7">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-sm max-h-[92dvh] overflow-y-auto p-6 sm:p-7">
         <h3 className="text-lg font-bold mb-1">{title}</h3>
         <p className="text-sm text-slate-500 mb-4 font-mono">{subtitle}</p>
         <div className="space-y-3">

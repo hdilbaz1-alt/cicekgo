@@ -5,7 +5,7 @@ import { canAny, P } from '@/lib/permissions';
 import {
   LayoutDashboard, ClipboardList, Truck, Users, UsersRound, BookText, Wallet,
   BarChart3, Package, UserCog, Trash2, ScrollText, Settings, ChevronRight,
-  ChevronsLeft, Tag, Ruler, Clock, ListChecks, Printer, RotateCcw, MapPin, type LucideIcon,
+  ChevronsLeft, Tag, Ruler, Clock, ListChecks, Printer, RotateCcw, MapPin, Bell, type LucideIcon,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -21,6 +21,7 @@ interface Item { id: string; label: string; icon: LucideIcon; perm?: string[]; g
 
 const ITEMS: Item[] = [
   { id: 'dashboard', label: 'Anasayfa', icon: LayoutDashboard, group: 'Genel' },
+  { id: 'notifications', label: 'Bildirimler', icon: Bell, group: 'Genel' },
   { id: 'orders', label: 'Siparişler', icon: ClipboardList, perm: [P.ordersView], group: 'Operasyon' },
   { id: 'my-deliveries', label: 'Teslimatlarım', icon: Truck, perm: [P.ordersViewOwn], group: 'Operasyon' },
   { id: 'customers', label: 'Müşteriler', icon: Users, perm: [P.customersView], group: 'Operasyon' },

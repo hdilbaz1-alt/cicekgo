@@ -19,4 +19,12 @@ public class AuthController : ControllerBase
         var result = await _auth.LoginAsync(request, ct);
         return Ok(ApiResponse<LoginResultDto>.Ok(result));
     }
+
+    [AllowAnonymous]
+    [HttpPost("refresh")]
+    public async Task<ActionResult<ApiResponse<RefreshResultDto>>> Refresh([FromBody] RefreshRequestDto request, CancellationToken ct)
+    {
+        var result = await _auth.RefreshAsync(request.RefreshToken, ct);
+        return Ok(ApiResponse<RefreshResultDto>.Ok(result));
+    }
 }

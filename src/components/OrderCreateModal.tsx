@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api';
 
 import { useState, useEffect } from 'react';
 import { orderService, getOrderCodes, updateOrderCode, Customer } from '@/services/orderService';
@@ -128,7 +129,7 @@ export default function OrderCreateModal({ isOpen, onClose, onSuccess }: OrderCr
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch(`${BASE_URL}${ENDPOINTS.PRODUCT_TYPE_LIST}`, {
+      const response = await apiFetch(`${BASE_URL}${ENDPOINTS.PRODUCT_TYPE_LIST}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -149,7 +150,7 @@ export default function OrderCreateModal({ isOpen, onClose, onSuccess }: OrderCr
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch(`${BASE_URL}${ENDPOINTS.ORDER_STATUS_LIST}`, {
+      const response = await apiFetch(`${BASE_URL}${ENDPOINTS.ORDER_STATUS_LIST}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -315,7 +316,7 @@ export default function OrderCreateModal({ isOpen, onClose, onSuccess }: OrderCr
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-      <div className="w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-xl overflow-hidden">
+      <div className="w-full max-w-4xl max-h-[90dvh] bg-white rounded-2xl shadow-xl overflow-hidden">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 flex items-start justify-between">
           <div>

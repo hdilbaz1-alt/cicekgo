@@ -1,6 +1,7 @@
 using System.Globalization;
 using CicekGo.Application.Abstractions;
 using CicekGo.Application.Common;
+using CicekGo.Application.Notifications;
 using CicekGo.Application.Orders;
 using CicekGo.Domain.Authorization;
 using CicekGo.Domain.Tenant;
@@ -15,13 +16,31 @@ public class OrderService : IOrderService
     private readonly ICurrentUser _current;
     private readonly IAuditLogger _audit;
     private readonly MasterDbContext _master;
+    private readonly IPushNotificationService _push;
 
-    public OrderService(TenantDbContext db, ICurrentUser current, IAuditLogger audit, MasterDbContext master)
+    public OrderService(TenantDbContext db, ICurrentUser current, IAuditLogger audit, MasterDbContext master, IPushNotificationService push)
     {
         _db = db;
         _current = current;
         _audit = audit;
         _master = master;
+        _push = push;
+    }
+
+    /// <summary>Atanan kuryeye "yeni sipariş" push bildirimi (commit sonrası, hata yutulur).</summary>
+    private async Task NotifyCourierAsync(int courierUserId, string orderCode, string? recipient, CancellationToken ct)
+    {
+        try
+        {
+            await _push.SendToUserAsync(courierUserId, new NotificationPayload
+            {
+                Title = "Yeni siparişin var! 🌸",
+                Body = string.IsNullOrWhiteSpace(recipient) ? $"Sipariş {orderCode}" : $"{orderCode} · {recipient}",
+                Url = $"/?go=order&code={Uri.EscapeDataString(orderCode)}",
+                Tag = $"order-{orderCode}"
+            }, ct);
+        }
+        catch { /* bildirim sipariş akışını bozmaz */ }
     }
 
     /// <summary>assignedCourierId'leri master DB'den isimle eşler.</summary>
@@ -29,8 +48,10 @@ public class OrderService : IOrderService
     {
         var ids = items.Where(i => i.AssignedCourierId.HasValue).Select(i => i.AssignedCourierId!.Value).Distinct().ToList();
         if (ids.Count == 0) return;
-        var names = await _master.Users.AsNoTracking().Where(u => ids.Contains(u.Id))
-            .ToDictionaryAsync(u => u.Id, u => u.FullName ?? u.Username, ct);
+        // FullName boş string olabilir (null değil) → ?? yetmez; boş/whitespace ise kullanıcı adına düş
+        var rows = await _master.Users.AsNoTracking().Where(u => ids.Contains(u.Id))
+            .Select(u => new { u.Id, u.FullName, u.Username }).ToListAsync(ct);
+        var names = rows.ToDictionary(u => u.Id, u => string.IsNullOrWhiteSpace(u.FullName) ? u.Username : u.FullName!);
         foreach (var it in items)
             if (it.AssignedCourierId.HasValue && names.TryGetValue(it.AssignedCourierId.Value, out var n))
                 it.AssignedCourierName = n;
@@ -162,6 +183,10 @@ public class OrderService : IOrderService
 
         await _audit.LogAsync("CREATE", "Orders", "Order", order.Id.ToString(),
             $"Sipariş oluşturuldu: {order.Code}", ct: ct);
+
+        // Atanmış kurye varsa anlık bildirim (commit sonrası)
+        if (order.AssignedCourierId.HasValue)
+            await NotifyCourierAsync(order.AssignedCourierId.Value, order.Code, order.RecipientName, ct);
 
         return new OrderCreateResultDto { OrderPkId = order.Id, OrderCode = order.Code };
     }
@@ -722,6 +747,7 @@ public class OrderService : IOrderService
         var order = await _db.Orders.FirstOrDefaultAsync(o => o.Code == orderCode, ct)
             ?? throw new NotFoundException("order not found");
 
+        var prevCourier = order.AssignedCourierId;
         order.AssignedCourierId = dto.CourierUserId;
         order.UpdatedAt = DateTime.UtcNow;
         order.UpdatedBy = User;
@@ -729,6 +755,10 @@ public class OrderService : IOrderService
 
         await _audit.LogAsync("ASSIGN_COURIER", "Orders", "Order", order.Id.ToString(),
             $"Kurye atandı: {order.Code} -> kullanıcı {dto.CourierUserId}", ct: ct);
+
+        // Yeni atanan kuryeye anlık bildirim (atama değiştiyse)
+        if (dto.CourierUserId.HasValue && dto.CourierUserId != prevCourier)
+            await NotifyCourierAsync(dto.CourierUserId.Value, order.Code, order.RecipientName, ct);
     }
 
     public async Task ChangeStatusByCodeAsync(string orderCode, ChangeStatusDto dto, CancellationToken ct = default)

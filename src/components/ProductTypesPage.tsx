@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api';
 
 import { useState, useEffect } from 'react';
 import { useNotification } from '@/components/NotificationSystem';
@@ -44,7 +45,7 @@ export default function ProductTypesPage() {
         return;
       }
 
-      const response = await fetch(`${BASE_URL}${ENDPOINTS.PRODUCT_TYPE_LIST}`, {
+      const response = await apiFetch(`${BASE_URL}${ENDPOINTS.PRODUCT_TYPE_LIST}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -105,7 +106,7 @@ export default function ProductTypesPage() {
         return;
       }
 
-      const response = await fetch(`${BASE_URL}${ENDPOINTS.PRODUCT_TYPE_ADD}`, {
+      const response = await apiFetch(`${BASE_URL}${ENDPOINTS.PRODUCT_TYPE_ADD}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -169,7 +170,7 @@ export default function ProductTypesPage() {
         return;
       }
 
-      const response = await fetch(`${BASE_URL}${ENDPOINTS.PRODUCT_TYPE_UPDATE}/${editingProductType.id}`, {
+      const response = await apiFetch(`${BASE_URL}${ENDPOINTS.PRODUCT_TYPE_UPDATE}/${editingProductType.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -220,7 +221,7 @@ export default function ProductTypesPage() {
             return;
           }
 
-          const response = await fetch(`${BASE_URL}${ENDPOINTS.PRODUCT_TYPE_DELETE}/${productType.id}`, {
+          const response = await apiFetch(`${BASE_URL}${ENDPOINTS.PRODUCT_TYPE_DELETE}/${productType.id}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${token}`

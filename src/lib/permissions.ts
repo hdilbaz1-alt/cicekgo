@@ -62,4 +62,5 @@ export const P = {
   rolesManage: 'roles.manage',
   settingsManage: 'settings.manage',
   auditView: 'audit.view',
+  notificationsSend: 'notifications.send',
 } as const;

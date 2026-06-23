@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api';
 import { getApiUrl, getEndpoint } from '@/config/api';
 
 export interface PrintTemplate {
@@ -41,19 +42,19 @@ async function handle<T>(res: Response): Promise<T> {
 
 export const templateService = {
   async list(): Promise<PrintTemplate[]> {
-    return handle<PrintTemplate[]>(await fetch(getApiUrl(getEndpoint('PRINT_TEMPLATE_LIST')), { headers: authHeaders() }));
+    return handle<PrintTemplate[]>(await apiFetch(getApiUrl(getEndpoint('PRINT_TEMPLATE_LIST')), { headers: authHeaders() }));
   },
   async create(t: PrintTemplateSave): Promise<number> {
-    return handle<number>(await fetch(getApiUrl(getEndpoint('PRINT_TEMPLATE')), { method: 'POST', headers: authHeaders(), body: JSON.stringify(t) }));
+    return handle<number>(await apiFetch(getApiUrl(getEndpoint('PRINT_TEMPLATE')), { method: 'POST', headers: authHeaders(), body: JSON.stringify(t) }));
   },
   async update(id: number, t: PrintTemplateSave): Promise<void> {
-    await handle(await fetch(`${getApiUrl(getEndpoint('PRINT_TEMPLATE'))}/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(t) }));
+    await handle(await apiFetch(`${getApiUrl(getEndpoint('PRINT_TEMPLATE'))}/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(t) }));
   },
   async remove(id: number): Promise<void> {
-    await handle(await fetch(`${getApiUrl(getEndpoint('PRINT_TEMPLATE'))}/${id}`, { method: 'DELETE', headers: authHeaders() }));
+    await handle(await apiFetch(`${getApiUrl(getEndpoint('PRINT_TEMPLATE'))}/${id}`, { method: 'DELETE', headers: authHeaders() }));
   },
   async setDefault(id: number): Promise<void> {
-    await handle(await fetch(`${getApiUrl(getEndpoint('PRINT_TEMPLATE'))}/${id}/default`, { method: 'POST', headers: authHeaders() }));
+    await handle(await apiFetch(`${getApiUrl(getEndpoint('PRINT_TEMPLATE'))}/${id}/default`, { method: 'POST', headers: authHeaders() }));
   },
 };
 

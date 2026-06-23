@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api';
 import { getApiUrl, getEndpoint } from '@/config/api';
 
 export interface RefundDto {
@@ -29,7 +30,7 @@ export const refundService = {
     const p = new URLSearchParams();
     if (opts?.customerId) p.set('customerId', String(opts.customerId));
     if (opts?.onlyOpen) p.set('onlyOpen', 'true');
-    const res = await fetch(`${getApiUrl(getEndpoint('REFUND_LIST'))}?${p}`, { headers: auth() });
+    const res = await apiFetch(`${getApiUrl(getEndpoint('REFUND_LIST'))}?${p}`, { headers: auth() });
     const b = await res.json();
     return b.success ? (b.data as RefundDto[]) : [];
   },
@@ -39,19 +40,19 @@ export const refundService = {
     if (opts.q) p.set('q', opts.q);
     if (opts.nonCariOnly) p.set('nonCariOnly', 'true');
     if (opts.onlyOpen) p.set('onlyOpen', 'true');
-    const res = await fetch(`${getApiUrl(getEndpoint('REFUND_SEARCH'))}?${p}`, { headers: auth() });
+    const res = await apiFetch(`${getApiUrl(getEndpoint('REFUND_SEARCH'))}?${p}`, { headers: auth() });
     const b = await res.json();
     return b.success ? (b.data as RefundDto[]) : [];
   },
 
   async summary(): Promise<RefundSummary> {
-    const res = await fetch(getApiUrl(getEndpoint('REFUND_SUMMARY')), { headers: auth() });
+    const res = await apiFetch(getApiUrl(getEndpoint('REFUND_SUMMARY')), { headers: auth() });
     const b = await res.json();
     return b.success ? b.data : { pendingCount: 0, pendingTotal: 0 };
   },
 
   async process(id: number, body: { amount?: number | null; note?: string; refundDate?: string; paymentMethodId?: number }): Promise<RefundDto> {
-    const res = await fetch(`${getApiUrl(getEndpoint('REFUND_PROCESS'))}/${id}/process`, {
+    const res = await apiFetch(`${getApiUrl(getEndpoint('REFUND_PROCESS'))}/${id}/process`, {
       method: 'POST', headers: auth(), body: JSON.stringify(body),
     });
     const b = await res.json();
@@ -61,7 +62,7 @@ export const refundService = {
 
   // Bekleyen iadeyi kasa/ödeme kaydı OLUŞTURMADAN "ödendi" kapatır (ödeme başka yolla yapıldıysa).
   async resolve(id: number, note?: string): Promise<RefundDto> {
-    const res = await fetch(`${getApiUrl(getEndpoint('REFUND_PROCESS'))}/${id}/resolve`, {
+    const res = await apiFetch(`${getApiUrl(getEndpoint('REFUND_PROCESS'))}/${id}/resolve`, {
       method: 'POST', headers: auth(), body: JSON.stringify({ note: note || null }),
     });
     const b = await res.json();

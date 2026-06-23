@@ -260,7 +260,7 @@ function ProductForm({ product, categories, units, onClose, onSaved, onCategoryA
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-7">
+      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90dvh] overflow-y-auto p-7">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-xl font-bold">{isEdit ? 'Ürünü Düzenle' : 'Yeni Ürün'}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl leading-none">×</button>
@@ -447,7 +447,7 @@ function ProductImportModal({ onClose, onDone }: { onClose: () => void; onDone: 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md max-h-[92vh] overflow-y-auto p-6">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md max-h-[92dvh] overflow-y-auto p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><Upload className="w-5 h-5" /></div>
           <h3 className="text-lg font-bold text-slate-900">Excel ile İçe Aktar</h3>

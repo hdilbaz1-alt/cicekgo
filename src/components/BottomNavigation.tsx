@@ -1,7 +1,7 @@
 'use client';
 
 import { can, P } from '@/lib/permissions';
-import { LayoutDashboard, ClipboardList, Truck, Users, Wallet, type LucideIcon } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, Truck, Users, Wallet, Menu, type LucideIcon } from 'lucide-react';
 
 interface BottomNavigationProps {
   currentPage: string;
@@ -10,20 +10,23 @@ interface BottomNavigationProps {
 }
 
 export default function BottomNavigation({ currentPage, onPageChange }: BottomNavigationProps) {
-  const items: { id: string; label: string; icon: LucideIcon; show: boolean }[] = [
+  const dyn: { id: string; label: string; icon: LucideIcon; show: boolean }[] = [
     { id: 'dashboard', label: 'Anasayfa', icon: LayoutDashboard, show: true },
     { id: 'orders', label: 'Siparişler', icon: ClipboardList, show: can(P.ordersView) },
     { id: 'my-deliveries', label: 'Teslimat', icon: Truck, show: can(P.ordersViewOwn) && !can(P.ordersView) },
     { id: 'customers', label: 'Müşteriler', icon: Users, show: can(P.customersView) },
     { id: 'finance', label: 'Kasa', icon: Wallet, show: can(P.financeViewGeneralLedger) || can(P.financeViewCash) },
-  ].filter((x) => x.show).slice(0, 5);
+  ].filter((x) => x.show).slice(0, 4);
+
+  const items = [...dyn, { id: 'more', label: 'Menü', icon: Menu, show: true }];
+  const moreActive = (id: string) => id === 'more' && !dyn.some((d) => d.id === currentPage);
 
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-slate-200 z-40 pb-[env(safe-area-inset-bottom)]">
       <div className="flex items-stretch justify-around">
         {items.map((item) => {
           const Icon = item.icon;
-          const active = currentPage === item.id;
+          const active = currentPage === item.id || moreActive(item.id);
           return (
             <button
               key={item.id}

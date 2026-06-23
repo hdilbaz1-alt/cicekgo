@@ -34,7 +34,7 @@ export default function RefundProcessModal({ refund, onClose, onDone }: { refund
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-sm max-h-[92vh] overflow-y-auto p-6 sm:p-7">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-sm max-h-[92dvh] overflow-y-auto p-6 sm:p-7">
         <h3 className="text-lg font-bold mb-1">İade Et</h3>
         <p className="text-sm text-slate-500 mb-4">{refund.orderCode}{refund.customerName ? ` · ${refund.customerName}` : ''} · kalan iade {money(refund.remaining)}</p>
         <div className="flex gap-2 mb-4">

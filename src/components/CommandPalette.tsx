@@ -103,7 +103,7 @@ export default function CommandPalette({ open, onClose, onNavigate, onNewOrder }
           <kbd className="text-[11px] text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">Esc</kbd>
         </div>
 
-        <div ref={listRef} className="max-h-[60vh] overflow-y-auto py-2">
+        <div ref={listRef} className="max-h-[60dvh] overflow-y-auto py-2">
           {flat.length === 0 && <div className="px-4 py-8 text-center text-sm text-slate-400">Sonuç yok.</div>}
 
           {filteredActions.length > 0 && <Group label="Hızlı işlem" />}

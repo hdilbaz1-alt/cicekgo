@@ -331,7 +331,7 @@ function MemberAddModal({ group, customers, allCount, picked, search, adding, on
   useEscClose(onClose);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="w-full max-w-2xl max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="w-full max-w-2xl max-h-[90dvh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
           <div className="min-w-0">
             <h2 className="text-lg font-bold text-slate-900 truncate">{group.groupName} · Üye Ekle</h2>

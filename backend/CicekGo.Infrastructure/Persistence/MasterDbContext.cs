@@ -17,6 +17,8 @@ public class MasterDbContext : DbContext
     public DbSet<Province> Provinces => Set<Province>();
     public DbSet<District> Districts => Set<District>();
     public DbSet<PlatformSetting> PlatformSettings => Set<PlatformSetting>();
+    public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -101,6 +103,29 @@ public class MasterDbContext : DbContext
             e.Property(x => x.Key).IsRequired().HasMaxLength(100);
             e.Property(x => x.Value).HasMaxLength(1000);
             e.HasIndex(x => x.Key).IsUnique();
+        });
+
+        b.Entity<RefreshToken>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.TokenHash).IsRequired().HasMaxLength(100);
+            e.Property(x => x.ReplacedByHash).HasMaxLength(100);
+            e.Property(x => x.UserAgent).HasMaxLength(400);
+            e.HasIndex(x => x.TokenHash).IsUnique();
+            e.HasIndex(x => x.UserId);
+            e.Ignore(x => x.IsActive);
+        });
+
+        b.Entity<PushSubscription>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Endpoint).IsRequired().HasMaxLength(500);
+            e.Property(x => x.P256dh).IsRequired().HasMaxLength(255);
+            e.Property(x => x.Auth).IsRequired().HasMaxLength(255);
+            e.Property(x => x.UserAgent).HasMaxLength(400);
+            e.HasIndex(x => x.Endpoint).IsUnique();
+            e.HasIndex(x => x.UserId);
+            e.HasIndex(x => x.TenantId);
         });
     }
 }

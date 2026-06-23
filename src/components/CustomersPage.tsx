@@ -199,7 +199,7 @@ function CustomerForm({ customer, onClose, onSaved }: { customer: CustomerDetail
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 overflow-y-auto">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-lg sm:my-6 max-h-[92vh] overflow-y-auto p-5 sm:p-6">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-lg sm:my-6 max-h-[92dvh] overflow-y-auto p-5 sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold">{isEdit ? 'Müşteriyi Düzenle' : 'Yeni Müşteri'}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl leading-none">×</button>

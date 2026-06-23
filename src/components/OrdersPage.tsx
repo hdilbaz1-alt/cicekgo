@@ -1,6 +1,7 @@
 'use client';
+import { apiFetch } from '@/lib/api';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { orderService, OrderItem } from '@/services/orderService';
 import { getApiUrl, getEndpoint } from '@/config/api';
 import OrderFormModal from './OrderFormModal';
@@ -13,14 +14,53 @@ import StatusBadge from './StatusBadge';
 import CopyButton from './CopyButton';
 import ContextMenu from './ContextMenu';
 import CourierAssignModal from './CourierAssignModal';
+import CustomerPickerModal from './CustomerPickerModal';
+import { CustomerDetail } from '@/services/customerService';
 import PaymentMethodSelect from './PaymentMethodSelect';
 import { PaymentMethodDto } from '@/services/paymentMethodService';
 import {
   Plus, Eye, CheckCircle2, Pencil, Trash2, ClipboardList, Wallet, Clock, X,
-  Phone, MapPin, Printer, Truck, Copy, type LucideIcon,
+  Phone, MapPin, Printer, Truck, Copy, SlidersHorizontal, User, Eraser, Filter, MoreVertical, ArrowUp, ArrowDown, type LucideIcon,
 } from 'lucide-react';
 
 const money = (n: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(n || 0);
+const advInput = 'w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white';
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (<label className="block"><span className="text-xs font-medium text-slate-600">{label}</span><div className="mt-1">{children}</div></label>);
+}
+
+const sortBtnCls = (on: boolean) =>
+  `inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl text-xs font-medium border transition-colors ${on ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`;
+
+/** Çoktan seçmeli (checkbox) filtre listesi — seçenekler gelen veriden. */
+function ChecklistFilter({ title, options, selected, onToggle, onClear, labelOf }:
+  { title: string; options: string[]; selected: string[]; onToggle: (v: string) => void; onClear: () => void; labelOf?: (v: string) => string }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-xs font-medium text-slate-600">{title}</span>
+        {selected.length > 0 && <button onClick={onClear} className="text-[11px] font-medium text-rose-500 hover:underline">Temizle ({selected.length})</button>}
+      </div>
+      <div className="max-h-56 overflow-y-auto -mx-1 px-1 space-y-0.5">
+        {options.length === 0 && <div className="text-xs text-slate-400 py-3 text-center">Veri yok</div>}
+        {options.map((opt) => (
+          <label key={opt} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-50 cursor-pointer">
+            <input type="checkbox" checked={selected.includes(opt)} onChange={() => onToggle(opt)} className="w-4 h-4 rounded accent-indigo-600 shrink-0" />
+            <span className="text-sm text-slate-700 truncate">{labelOf ? labelOf(opt) : opt}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Değeri 300ms geciktirir — filtreler "anlık ama debounce'lı" çalışsın diye. */
+function useDebounced<T>(value: T, ms: number): T {
+  const [v, setV] = useState(value);
+  useEffect(() => { const t = setTimeout(() => setV(value), ms); return () => clearTimeout(t); }, [value, ms]);
+  return v;
+}
 
 
 const FOCUS_PREPARE = ['Yeni', 'Onaylandı', 'Hazırlanıyor'];
@@ -63,8 +103,8 @@ function WaIcon({ className }: { className?: string }) {
   );
 }
 
-export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, onCloseModal = () => {}, focus, onNavigate }:
-  { onCreateOrder?: () => void; isCreateModalOpen?: boolean; onCloseModal?: () => void; focus?: string; onNavigate?: (p: string, opts?: Record<string, unknown>) => void }) {
+export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, onCloseModal = () => {}, focus, openOrderCode, onNavigate }:
+  { onCreateOrder?: () => void; isCreateModalOpen?: boolean; onCloseModal?: () => void; focus?: string; openOrderCode?: string; onNavigate?: (p: string, opts?: Record<string, unknown>) => void }) {
   const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const [preset, setPreset] = useState<'yesterday' | 'today' | 'tomorrow' | 'week' | 'month' | 'custom'>('today');
   const [customFrom, setCustomFrom] = useState(ymd(new Date()));
@@ -80,11 +120,21 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
   const [deleteTarget, setDeleteTarget] = useState<OrderItem | null>(null);
   const [menu, setMenu] = useState<{ x: number; y: number; order: OrderItem } | null>(null);
   const [assignOrder, setAssignOrder] = useState<OrderItem | null>(null);
-  const [query, setQuery] = useState('');
-  const [statusF, setStatusF] = useState('');
-  const [payF, setPayF] = useState('');
-  const [courierF, setCourierF] = useState('');
-  const [showFilter, setShowFilter] = useState(false);
+  // Merkezî filtre state'i — tüm filtreler YÜKLÜ (gelen) veride çalışır. Hem kolon başlığı filtreleri hem "Detaylı Filtreleme" paneli bunu kullanır.
+  const ADV0 = { senderName: '', senderPhone: '', recipientName: '', recipientPhone: '', code: '', productType: '', minPrice: '', maxPrice: '', remaining: 'all' as 'all' | 'yes' | 'no', start: '', end: '' };
+  const [drawerOpen, setDrawerOpen] = useState(false);        // tek sağ filtre drawer'ı
+  const [drawerSection, setDrawerSection] = useState<string | null>(null);
+  const [adv, setAdv] = useState({ ...ADV0 });
+  const [statusSel, setStatusSel] = useState<string[]>([]);   // çoktan seçmeli
+  const [paySel, setPaySel] = useState<string[]>([]);
+  const [courierSel, setCourierSel] = useState<string[]>([]); // '__none__' = atanmamış
+  const [sortBy, setSortBy] = useState<{ key: 'amount' | 'delivery' | null; dir: 'asc' | 'desc' }>({ key: null, dir: 'asc' });
+  const [advCustomerId, setAdvCustomerId] = useState<number | null>(null);
+  const [advPicker, setAdvPicker] = useState(false);
+  const [showCols2, setShowCols2] = useState(false);          // masaüstü tablo ayarları (kolon yönetimi) menüsü
+  const setAdvField = (k: keyof typeof ADV0, v: string) => setAdv((a) => ({ ...a, [k]: v }));
+  const toggleSel = (setter: (u: (a: string[]) => string[]) => void, v: string) => setter((arr) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]));
+  const setSort = (key: 'amount' | 'delivery', dir: 'asc' | 'desc') => setSortBy((s) => (s.key === key && s.dir === dir ? { key: null, dir: 'asc' } : { key, dir }));
   const [focusGroup, setFocusGroup] = useState<string | null>(focus ?? null);
   // Dashboard'dan gelen odak (hazırlanacak / yolda): geniş aralığa al ve grupla filtrele
   useEffect(() => {
@@ -97,7 +147,6 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
   // Dinamik kolon durumu (kullanıcı bazlı, localStorage) — "İşlem" hariç
   const [colOrder, setColOrder] = useState<string[]>(DEFAULT_COL_ORDER);
   const [colHidden, setColHidden] = useState<string[]>([]);
-  const [showCols, setShowCols] = useState(false);
   const [dragCol, setDragCol] = useState<string | null>(null);
   const [overCol, setOverCol] = useState<string | null>(null);
 
@@ -129,6 +178,22 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
 
   useEffect(() => { if (isCreateModalOpen) setCreateOpen(true); }, [isCreateModalOpen]);
 
+  // Filtre drawer'ı: ESC ile kapan, arka planı kilitle, ilgili bölüme kaydır
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setDrawerOpen(false); };
+    document.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow; document.body.style.overflow = 'hidden';
+    if (drawerSection) { const t = setTimeout(() => document.querySelector(`[data-sec="${drawerSection}"]`)?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 60); return () => { clearTimeout(t); document.removeEventListener('keydown', onKey); document.body.style.overflow = prev; }; }
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prev; };
+  }, [drawerOpen, drawerSection]);
+
+  // Push bildiriminden derin bağlantı: kod ile sipariş detayını aç
+  useEffect(() => {
+    if (!openOrderCode) return;
+    orderService.getOrderDetail(openOrderCode).then((d) => { if (d) setDetailOrder(d); }).catch(() => { });
+  }, [openOrderCode]);
+
   const range = useMemo(() => {
     const now = new Date();
     if (preset === 'today') return { from: ymd(now), to: ymd(now) };
@@ -143,20 +208,89 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
   const statusOptions = useMemo(() => Array.from(new Set(orders.map((o) => o.orderStatus).filter(Boolean))) as string[], [orders]);
   const payOptions = useMemo(() => Array.from(new Set(orders.map((o) => o.paymentStatus).filter(Boolean))) as string[], [orders]);
   const courierOptions = useMemo(() => Array.from(new Set(orders.map((o) => o.assignedCourierName).filter(Boolean))) as string[], [orders]);
+  const productOptions = useMemo(() => Array.from(new Set(orders.map((o) => o.productType).filter(Boolean))) as string[], [orders]);
+
+  const advActive = useMemo(() => !!(advCustomerId || adv.senderName || adv.senderPhone || adv.recipientName || adv.recipientPhone ||
+    adv.code || adv.productType || adv.minPrice || adv.maxPrice || adv.remaining !== 'all' || adv.start || adv.end ||
+    statusSel.length || paySel.length || courierSel.length || sortBy.key), [adv, advCustomerId, statusSel, paySel, courierSel, sortBy]);
+
+  const fAdv = useDebounced(adv, 300);   // metin/sayı/tarih filtreleri 300ms debounce
   const filtered = useMemo(() => {
     let list = orders;
-    const q = query.trim().toLowerCase();
-    if (q) list = list.filter((o) =>
-      [o.orderCode, o.recipientName, o.recipientPhone, o.senderName, o.senderPhone, o.recipientAddress, o.assignedCourierName]
-        .some((v) => (v || '').toLowerCase().includes(q)));
-    if (statusF) list = list.filter((o) => o.orderStatus === statusF);
-    if (payF) list = list.filter((o) => o.paymentStatus === payF);
-    if (courierF) list = list.filter((o) => (courierF === '__none__' ? !o.assignedCourierName : o.assignedCourierName === courierF));
     if (focusGroup === 'prepare') list = list.filter((o) => FOCUS_PREPARE.includes(o.orderStatus || ''));
     if (focusGroup === 'road') list = list.filter((o) => FOCUS_ROAD.includes(o.orderStatus || ''));
+
+    const inc = (v: string | null | undefined, term: string) => (v || '').toLowerCase().includes(term.toLowerCase());
+    // Gönderici (cari seçildiyse cariye göre, yoksa ad/telefon)
+    if (advCustomerId) list = list.filter((o) => o.customerId === advCustomerId);
+    else if (fAdv.senderName.trim()) list = list.filter((o) => inc(o.senderName, fAdv.senderName.trim()));
+    if (fAdv.senderPhone.trim()) list = list.filter((o) => (o.senderPhone || '').includes(fAdv.senderPhone.trim()));
+    // Alıcı
+    if (fAdv.recipientName.trim()) list = list.filter((o) => inc(o.recipientName, fAdv.recipientName.trim()));
+    if (fAdv.recipientPhone.trim()) list = list.filter((o) => (o.recipientPhone || '').includes(fAdv.recipientPhone.trim()));
+    if (fAdv.code.trim()) list = list.filter((o) => inc(o.orderCode, fAdv.code.trim()));
+    if (fAdv.productType) list = list.filter((o) => o.productType === fAdv.productType);
+    // Çoktan seçmeli: durum / ödeme / kurye (anında)
+    if (statusSel.length) list = list.filter((o) => statusSel.includes(o.orderStatus || ''));
+    if (paySel.length) list = list.filter((o) => paySel.includes(o.paymentStatus || ''));
+    if (courierSel.length) list = list.filter((o) => courierSel.includes(o.assignedCourierName || '__none__'));
+    const minP = parseFloat(fAdv.minPrice); if (!isNaN(minP)) list = list.filter((o) => (o.orderAmount || 0) >= minP);
+    const maxP = parseFloat(fAdv.maxPrice); if (!isNaN(maxP)) list = list.filter((o) => (o.orderAmount || 0) <= maxP);
+    if (fAdv.remaining === 'yes') list = list.filter((o) => (o.orderRemainingAmount || 0) > 0.001);
+    else if (fAdv.remaining === 'no') list = list.filter((o) => (o.orderRemainingAmount || 0) <= 0.001);
+    // Teslimat tarihi (yüklü veri içinde daraltma)
+    if (fAdv.start) list = list.filter((o) => o.deliveryDate && o.deliveryDate.slice(0, 10) >= fAdv.start);
+    if (fAdv.end) list = list.filter((o) => o.deliveryDate && o.deliveryDate.slice(0, 10) <= fAdv.end);
+    // Sıralama (azdan çoka / çoktan aza)
+    if (sortBy.key) {
+      const m = sortBy.dir === 'asc' ? 1 : -1;
+      const val = (o: OrderItem) => sortBy.key === 'amount' ? (o.orderAmount || 0) : (o.deliveryDate ? Date.parse(o.deliveryDate) : 0);
+      list = [...list].sort((a, b) => (val(a) - val(b)) * m);
+    }
     return list;
-  }, [orders, query, statusF, payF, courierF, focusGroup]);
-  const hasFilter = !!(query || statusF || payF || courierF || focusGroup);
+  }, [orders, focusGroup, fAdv, advCustomerId, statusSel, paySel, courierSel, sortBy]);
+  const hasFilter = !!(focusGroup || advActive);
+
+  // Kolon başlığındaki filtre ikonu aktif mi?
+  const colActive = (key: string): boolean => {
+    switch (key) {
+      case 'code': return !!adv.code;
+      case 'recipient': return !!(adv.recipientName || adv.recipientPhone);
+      case 'sender': return !!(adv.senderName || adv.senderPhone || advCustomerId);
+      case 'delivery': return !!(adv.start || adv.end || sortBy.key === 'delivery');
+      case 'amount': return !!(adv.minPrice || adv.maxPrice || adv.remaining !== 'all' || sortBy.key === 'amount');
+      case 'status': return statusSel.length > 0;
+      case 'payment': return paySel.length > 0;
+      case 'courier': return courierSel.length > 0;
+      default: return false;
+    }
+  };
+
+  const applyAdvDates = () => {
+    if (adv.start && adv.end) { setPreset('custom'); setCustomFrom(adv.start); setCustomTo(adv.end); }
+  };
+  const clearAdv = () => { setAdv({ ...ADV0 }); setAdvCustomerId(null); setStatusSel([]); setPaySel([]); setCourierSel([]); setSortBy({ key: null, dir: 'asc' }); };
+
+  const FILTERABLE = new Set(['code', 'recipient', 'sender', 'delivery', 'amount', 'status', 'payment', 'courier']);
+  const openDrawer = (section?: string) => { setDrawerSection(section || null); setDrawerOpen(true); };
+
+  // Her zaman görünen aktif filtre çipleri
+  const chips: { label: string; onClear: () => void }[] = [];
+  if (advCustomerId) chips.push({ label: `Cari: ${adv.senderName || 'seçili'}`, onClear: () => { setAdvCustomerId(null); setAdvField('senderName', ''); } });
+  else if (adv.senderName) chips.push({ label: `Gönderici: ${adv.senderName}`, onClear: () => setAdvField('senderName', '') });
+  if (adv.senderPhone) chips.push({ label: `Gön. tel: ${adv.senderPhone}`, onClear: () => setAdvField('senderPhone', '') });
+  if (adv.recipientName) chips.push({ label: `Alıcı: ${adv.recipientName}`, onClear: () => setAdvField('recipientName', '') });
+  if (adv.recipientPhone) chips.push({ label: `Alıcı tel: ${adv.recipientPhone}`, onClear: () => setAdvField('recipientPhone', '') });
+  if (adv.code) chips.push({ label: `Kod: ${adv.code}`, onClear: () => setAdvField('code', '') });
+  if (adv.productType) chips.push({ label: `Ürün: ${adv.productType}`, onClear: () => setAdvField('productType', '') });
+  if (adv.start || adv.end) chips.push({ label: `Tarih: ${adv.start || '…'} – ${adv.end || '…'}`, onClear: () => setAdv((a) => ({ ...a, start: '', end: '' })) });
+  if (adv.minPrice) chips.push({ label: `Tutar ≥ ${adv.minPrice}`, onClear: () => setAdvField('minPrice', '') });
+  if (adv.maxPrice) chips.push({ label: `Tutar ≤ ${adv.maxPrice}`, onClear: () => setAdvField('maxPrice', '') });
+  if (adv.remaining !== 'all') chips.push({ label: `Kalan bakiye: ${adv.remaining === 'yes' ? 'var' : 'yok'}`, onClear: () => setAdvField('remaining', 'all') });
+  statusSel.forEach((s) => chips.push({ label: `Durum: ${s}`, onClear: () => toggleSel(setStatusSel, s) }));
+  paySel.forEach((s) => chips.push({ label: `Ödeme: ${s}`, onClear: () => toggleSel(setPaySel, s) }));
+  courierSel.forEach((s) => chips.push({ label: `Kurye: ${s === '__none__' ? 'Atanmamış' : s}`, onClear: () => toggleSel(setCourierSel, s) }));
+  if (sortBy.key) chips.push({ label: `Sırala: ${sortBy.key === 'amount' ? 'Tutar' : 'Tarih'} ${sortBy.dir === 'asc' ? '↑' : '↓'}`, onClear: () => setSortBy({ key: null, dir: 'asc' }) });
 
   const summary = useMemo(() => ({
     total: orders.length,
@@ -237,6 +371,84 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
           )}
         </div>
 
+        {/* Tek sağ filtre drawer'ı — kurumsal SaaS best practice (Trendyol/Shopify admin tarzı) */}
+        {drawerOpen && (
+          <div className="fixed inset-0 z-[80]">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDrawerOpen(false)} />
+            <div className="absolute inset-y-0 right-0 w-full sm:w-[420px] bg-white shadow-2xl flex flex-col">
+              <div className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-slate-100">
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2"><SlidersHorizontal className="w-5 h-5 text-indigo-600" /> Filtreler{chips.length ? ` (${chips.length})` : ''}</h3>
+                <button onClick={() => setDrawerOpen(false)} className="w-9 h-9 grid place-items-center rounded-xl text-slate-400 hover:bg-slate-100"><X className="w-5 h-5" /></button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto overscroll-contain p-5 space-y-5" style={{ WebkitOverflowScrolling: 'touch' }}>
+                <div data-sec="recipient" className="space-y-2">
+                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Alıcı</h4>
+                  <input value={adv.recipientName} onChange={(e) => setAdvField('recipientName', e.target.value)} placeholder="Alıcı adı" className={advInput} />
+                  <input value={adv.recipientPhone} onChange={(e) => setAdvField('recipientPhone', e.target.value.replace(/\D/g, ''))} inputMode="numeric" placeholder="Alıcı telefon (05…)" className={advInput} />
+                </div>
+
+                <div data-sec="sender" className="space-y-2">
+                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Gönderici</h4>
+                  <div className="flex gap-1.5">
+                    <input value={adv.senderName} readOnly={!!advCustomerId} onChange={(e) => setAdvField('senderName', e.target.value)} placeholder={advCustomerId ? '' : 'Gönderici adı'} className={`${advInput} ${advCustomerId ? 'bg-indigo-50 text-indigo-700 font-medium' : ''}`} />
+                    <button type="button" title="Cari hesaptan seç" onClick={() => setAdvPicker(true)} className="px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 shrink-0"><User className="w-4 h-4" /></button>
+                    {advCustomerId && <button type="button" title="Temizle" onClick={() => { setAdvCustomerId(null); setAdvField('senderName', ''); }} className="px-3 rounded-xl bg-slate-100 text-slate-500 shrink-0"><Eraser className="w-4 h-4" /></button>}
+                  </div>
+                  <input value={adv.senderPhone} onChange={(e) => setAdvField('senderPhone', e.target.value.replace(/\D/g, ''))} inputMode="numeric" placeholder="Gönderici telefon (05…)" className={advInput} />
+                </div>
+
+                <div data-sec="delivery" className="space-y-2">
+                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Teslimat Tarihi</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input type="date" value={adv.start} onChange={(e) => setAdvField('start', e.target.value)} className={advInput} />
+                    <input type="date" value={adv.end} onChange={(e) => setAdvField('end', e.target.value)} className={advInput} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <button onClick={() => setSort('delivery', 'asc')} className={sortBtnCls(sortBy.key === 'delivery' && sortBy.dir === 'asc')}><ArrowUp className="w-3.5 h-3.5" />Eskiden yeniye</button>
+                    <button onClick={() => setSort('delivery', 'desc')} className={sortBtnCls(sortBy.key === 'delivery' && sortBy.dir === 'desc')}><ArrowDown className="w-3.5 h-3.5" />Yeniden eskiye</button>
+                  </div>
+                </div>
+
+                <div data-sec="amount" className="space-y-2">
+                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Tutar</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input type="number" value={adv.minPrice} onChange={(e) => setAdvField('minPrice', e.target.value)} placeholder="Min" className={advInput} />
+                    <input type="number" value={adv.maxPrice} onChange={(e) => setAdvField('maxPrice', e.target.value)} placeholder="Max" className={advInput} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <button onClick={() => setSort('amount', 'asc')} className={sortBtnCls(sortBy.key === 'amount' && sortBy.dir === 'asc')}><ArrowUp className="w-3.5 h-3.5" />Azdan çoka</button>
+                    <button onClick={() => setSort('amount', 'desc')} className={sortBtnCls(sortBy.key === 'amount' && sortBy.dir === 'desc')}><ArrowDown className="w-3.5 h-3.5" />Çoktan aza</button>
+                  </div>
+                  <select value={adv.remaining} onChange={(e) => setAdvField('remaining', e.target.value)} className={advInput}>
+                    <option value="all">Kalan bakiye: Tümü</option><option value="yes">Kalanı olanlar</option><option value="no">Kalanı olmayanlar</option>
+                  </select>
+                </div>
+
+                <div data-sec="status"><h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Durum</h4><ChecklistFilter title="Sipariş Durumu" options={statusOptions} selected={statusSel} onToggle={(v) => toggleSel(setStatusSel, v)} onClear={() => setStatusSel([])} /></div>
+                <div data-sec="payment"><h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Ödeme</h4><ChecklistFilter title="Ödeme Durumu" options={payOptions} selected={paySel} onToggle={(v) => toggleSel(setPaySel, v)} onClear={() => setPaySel([])} /></div>
+                <div data-sec="courier"><h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Kurye</h4><ChecklistFilter title="Kurye" options={['__none__', ...courierOptions]} selected={courierSel} onToggle={(v) => toggleSel(setCourierSel, v)} onClear={() => setCourierSel([])} labelOf={(v) => (v === '__none__' ? 'Atanmamış' : v)} /></div>
+
+                <div data-sec="code" className="space-y-2">
+                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Diğer</h4>
+                  <input value={adv.code} onChange={(e) => setAdvField('code', e.target.value)} placeholder="Sipariş kodu" className={advInput} />
+                  <select value={adv.productType} onChange={(e) => setAdvField('productType', e.target.value)} className={advInput}>
+                    <option value="">Ürün türü: Tümü</option>{productOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+
+                <p className="text-[11px] text-slate-400">Filtreler yüklü siparişlerde anında uygulanır. Farklı tarih aralığını sunucudan çekmek için tarih seçip “Tarihi Uygula”ya basın.</p>
+              </div>
+
+              <div className="shrink-0 border-t border-slate-100 p-4 flex items-center gap-2" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+                <button onClick={clearAdv} className="px-3 py-2.5 rounded-2xl text-sm font-medium text-slate-600 hover:bg-slate-100">Temizle</button>
+                <button onClick={() => applyAdvDates()} className="px-3 py-2.5 rounded-2xl text-sm font-medium border border-slate-200 text-slate-700 hover:bg-slate-50">Tarihi Uygula</button>
+                <button onClick={() => setDrawerOpen(false)} className="flex-1 px-4 py-2.5 rounded-2xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white">Uygula ({filtered.length})</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* İstatistikler */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
           <Stat label="Toplam Sipariş" value={String(summary.total)} grad="from-blue-500 to-indigo-600" Icon={ClipboardList} />
@@ -245,21 +457,30 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
           <Stat label="Kalan Tutar" value={money(summary.remaining)} grad="from-orange-500 to-rose-600" Icon={Clock} small />
         </div>
 
-        {/* Arama & Filtre */}
-        <div className="mb-4 space-y-2">
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Sipariş ara (alıcı, telefon, kod, adres…)"
-                className="w-full pl-4 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <button onClick={() => setShowFilter((v) => !v)} className={`px-4 py-2.5 rounded-2xl text-sm font-medium border ${hasFilter || showFilter ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}`}>Filtre{hasFilter ? ' •' : ''}</button>
-            <div className="relative hidden lg:block">
-              <button onClick={() => setShowCols((v) => !v)} className={`px-4 py-2.5 rounded-2xl text-sm font-medium border ${showCols ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}`}>Kolonlar</button>
-              {showCols && (
+        {/* Üst çubuk: Filtrele butonu · sonuç sayısı · odak çipi · (masaüstü) kolon ayarları */}
+        <div className="mb-3 space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={() => openDrawer()} title="Filtrele"
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-medium border transition-colors ${advActive ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+              <SlidersHorizontal className="w-4 h-4" /> Filtrele{chips.length ? ` (${chips.length})` : ''}
+            </button>
+            <span className="text-sm text-slate-500"><b className="text-slate-800">{filtered.length}</b> sipariş</span>
+            {focusGroup && (
+              <span className="inline-flex items-center gap-1.5 bg-indigo-600 text-white text-xs font-medium px-3 py-1.5 rounded-full">
+                {focusGroup === 'prepare' ? 'Hazırlanacak siparişler' : 'Yoldaki siparişler'} ({filtered.length})
+                <button onClick={() => setFocusGroup(null)} className="hover:opacity-80">✕</button>
+              </span>
+            )}
+            <div className="ml-auto relative hidden lg:block">
+              <button onClick={() => setShowCols2((v) => !v)} title="Kolonları yönet"
+                className={`w-9 h-9 grid place-items-center rounded-xl border transition-colors ${showCols2 ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
+                <MoreVertical className="w-4 h-4" />
+              </button>
+              {showCols2 && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowCols(false)} />
+                  <div className="fixed inset-0 z-40" onClick={() => setShowCols2(false)} />
                   <div className="absolute right-0 mt-2 z-50 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl p-2">
-                    <div className="px-2 py-1.5 text-[11px] font-medium text-slate-400">Sürükleyerek sırala · göster/gizle</div>
+                    <div className="px-2 py-1.5 text-[11px] font-medium text-slate-400">Kolonları Yönet — sürükle-sırala · göster/gizle</div>
                     {colOrder.map((key) => (
                       <div key={key} draggable
                         onDragStart={() => setDragCol(key)}
@@ -281,40 +502,17 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
               )}
             </div>
           </div>
-          {showFilter && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-3 flex flex-wrap gap-3">
-              <div>
-                <label className="text-xs text-slate-500">Durum</label>
-                <select value={statusF} onChange={(e) => setStatusF(e.target.value)} className="block mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm">
-                  <option value="">Tümü</option>
-                  {statusOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-slate-500">Ödeme</label>
-                <select value={payF} onChange={(e) => setPayF(e.target.value)} className="block mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm">
-                  <option value="">Tümü</option>
-                  {payOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-slate-500">Kurye</label>
-                <select value={courierF} onChange={(e) => setCourierF(e.target.value)} className="block mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm">
-                  <option value="">Tümü</option>
-                  <option value="__none__">Atanmamış</option>
-                  {courierOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              {hasFilter && <button onClick={() => { setQuery(''); setStatusF(''); setPayF(''); setCourierF(''); setFocusGroup(null); }} className="self-end px-3 py-2 rounded-xl text-sm text-red-500 hover:bg-red-50">Temizle</button>}
-            </div>
-          )}
-          {focusGroup && (
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 bg-indigo-600 text-white text-xs font-medium px-3 py-1.5 rounded-full">
-                {focusGroup === 'prepare' ? 'Hazırlanacak siparişler' : 'Yoldaki siparişler'} ({filtered.length})
-                <button onClick={() => setFocusGroup(null)} className="hover:opacity-80">✕</button>
-              </span>
-              <span className="text-xs text-slate-400">son 1 ay</span>
+
+          {/* Aktif filtre çipleri — her zaman görünür */}
+          {chips.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {chips.map((c, i) => (
+                <span key={i} className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 text-xs font-medium pl-2.5 pr-1 py-1 rounded-full">
+                  {c.label}
+                  <button onClick={c.onClear} className="w-4 h-4 grid place-items-center rounded-full text-slate-400 hover:text-rose-500 hover:bg-white"><X className="w-3 h-3" /></button>
+                </span>
+              ))}
+              <button onClick={clearAdv} className="text-xs font-medium text-rose-600 hover:underline ml-1">Tümünü temizle</button>
             </div>
           )}
         </div>
@@ -330,36 +528,46 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
           </div>
         ) : (
           <>
-            {/* Masaüstü tablo */}
-            <div className="hidden lg:block bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-slate-50 text-slate-500 text-left">
-                    <tr>
-                      {visibleCols.map((key) => <th key={key} className="px-4 py-3 font-medium">{COL_LABEL[key]}</th>)}
-                      <th className="px-4 py-3 font-medium text-right">İşlem</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {filtered.map((o) => (
-                      <tr key={o.orderPkId} className={o.customerId ? 'bg-indigo-50 hover:bg-indigo-100/70' : 'hover:bg-slate-50'}
-                        onContextMenu={(e) => { e.preventDefault(); setMenu({ x: e.clientX, y: e.clientY, order: o }); }}>
-                        {visibleCols.map((key) => <td key={key} className="px-4 py-3">{renderCell(o, key)}</td>)}
-                        <td className="px-4 py-3">
-                          <div className="flex items-center justify-end gap-1">
-                            {o.recipientPhone && <button title="WhatsApp ile sohbet" onClick={() => openWhatsApp(o.recipientPhone)} className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-50"><WaIcon className="w-[18px] h-[18px]" /></button>}
-                            <Act title="Yazdır" onClick={() => setPrintOrder(o)} cls="text-indigo-600 hover:bg-indigo-50" Icon={Printer} />
-                            <Act title="Detay" onClick={() => setDetailOrder(o)} cls="text-slate-500 hover:bg-slate-100" Icon={Eye} />
-                            {can(P.ordersChangeStatus) && <Act title="Durum" onClick={() => setStatusOrder(o)} cls="text-amber-600 hover:bg-amber-50" Icon={CheckCircle2} />}
-                            {can(P.ordersUpdate) && <Act title="Düzenle" onClick={() => setEditOrder(o)} cls="text-blue-600 hover:bg-blue-50" Icon={Pencil} />}
-                            {can(P.ordersDelete) && <Act title="Sil" onClick={() => setDeleteTarget(o)} cls="text-red-500 hover:bg-red-50" Icon={Trash2} />}
-                          </div>
-                        </td>
-                      </tr>
+            {/* Masaüstü tablo — sticky header + kolon bazlı filtreler */}
+            <div className="hidden lg:block bg-white rounded-3xl border border-slate-100 shadow-sm">
+              <table className="w-full text-sm border-collapse">
+                <thead className="text-slate-500 text-left">
+                  <tr>
+                    {visibleCols.map((key) => (
+                      <th key={key} className="sticky top-0 z-20 bg-slate-50/95 backdrop-blur px-3 py-2.5 font-medium border-b border-slate-200 whitespace-nowrap">
+                        <div className="flex items-center gap-1">
+                          <span>{COL_LABEL[key]}</span>
+                          {FILTERABLE.has(key) && (
+                            <button onClick={() => openDrawer(key)} title="Filtrele"
+                              className={`p-1 rounded-md transition-colors ${colActive(key) ? 'text-indigo-600 bg-indigo-50' : 'text-slate-300 hover:text-slate-600 hover:bg-slate-100'}`}>
+                              <Filter className="w-3.5 h-3.5" strokeWidth={colActive(key) ? 2.6 : 2} />
+                            </button>
+                          )}
+                        </div>
+                      </th>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                    <th className="sticky top-0 z-20 bg-slate-50/95 backdrop-blur px-3 py-2.5 font-medium text-right border-b border-slate-200">İşlem</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filtered.map((o) => (
+                    <tr key={o.orderPkId} className={o.customerId ? 'bg-indigo-50 hover:bg-indigo-100/70' : 'hover:bg-slate-50'}
+                      onContextMenu={(e) => { e.preventDefault(); setMenu({ x: e.clientX, y: e.clientY, order: o }); }}>
+                      {visibleCols.map((key) => <td key={key} className="px-3 py-2.5 align-middle">{renderCell(o, key)}</td>)}
+                      <td className="px-3 py-2 align-middle">
+                        <div className="flex items-center justify-end gap-0.5">
+                          {o.recipientPhone && <button title="WhatsApp ile sohbet" onClick={() => openWhatsApp(o.recipientPhone)} className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50"><WaIcon className="w-[18px] h-[18px]" /></button>}
+                          <Act title="Yazdır" onClick={() => setPrintOrder(o)} cls="text-indigo-600 hover:bg-indigo-50" Icon={Printer} />
+                          <Act title="Detay" onClick={() => setDetailOrder(o)} cls="text-slate-500 hover:bg-slate-100" Icon={Eye} />
+                          {can(P.ordersChangeStatus) && <Act title="Durum" onClick={() => setStatusOrder(o)} cls="text-amber-600 hover:bg-amber-50" Icon={CheckCircle2} />}
+                          {can(P.ordersUpdate) && <Act title="Düzenle" onClick={() => setEditOrder(o)} cls="text-blue-600 hover:bg-blue-50" Icon={Pencil} />}
+                          {can(P.ordersDelete) && <Act title="Sil" onClick={() => setDeleteTarget(o)} cls="text-red-500 hover:bg-red-50" Icon={Trash2} />}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             {/* Mobil kartlar */}
@@ -430,6 +638,10 @@ export default function OrdersPage({ onCreateOrder, isCreateModalOpen = false, o
         <CourierAssignModal order={assignOrder} onClose={() => setAssignOrder(null)}
           onAssigned={(m) => { setAssignOrder(null); showToast(m); refresh(); }} />
       )}
+      {advPicker && (
+        <CustomerPickerModal onClose={() => setAdvPicker(false)}
+          onPick={(c: CustomerDetail) => { setAdvCustomerId(c.customerId); setAdv((a) => ({ ...a, senderName: c.customerName })); setAdvPicker(false); }} />
+      )}
       {toast && <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl shadow-2xl bg-slate-900 text-white text-sm font-medium">{toast}</div>}
     </div>
   );
@@ -467,7 +679,7 @@ function StatusModal({ order, onClose, onSaved }: { order: OrderItem; onClose: (
     (async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${getApiUrl(getEndpoint('ORDER_STATUS_LIST'))}`, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await apiFetch(`${getApiUrl(getEndpoint('ORDER_STATUS_LIST'))}`, { headers: { Authorization: `Bearer ${token}` } });
         const b = await res.json();
         const names = (b.data || []).map((x: { statusName: string }) => x.statusName);
         if (names.length) setOpts(names);
@@ -482,7 +694,7 @@ function StatusModal({ order, onClose, onSaved }: { order: OrderItem; onClose: (
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-sm max-h-[92vh] overflow-y-auto p-6 sm:p-7">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-sm max-h-[92dvh] overflow-y-auto p-6 sm:p-7">
         <h3 className="text-lg font-bold mb-1">Durum Değiştir</h3>
         <p className="text-sm text-slate-500 mb-4">{order.orderCode}</p>
         <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl mb-3" value={status} onChange={(e) => setStatus(e.target.value)}>
@@ -510,7 +722,7 @@ function DetailModal({ order, onClose, onToast, onPrint }: { order: OrderItem; o
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 overflow-y-auto">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-lg sm:my-4 max-h-[92vh] overflow-y-auto">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-lg sm:my-4 max-h-[92dvh] overflow-y-auto">
         {/* Üst başlık */}
         <div className="sticky top-0 bg-white/95 backdrop-blur px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3 rounded-t-3xl z-10">
           <div className="min-w-0">
@@ -650,7 +862,7 @@ function DeleteOrderModal({ order, onClose, onDeleted }: { order: OrderItem; onC
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md max-h-[92vh] overflow-y-auto p-6 sm:p-7">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md max-h-[92dvh] overflow-y-auto p-6 sm:p-7">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-11 h-11 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center shrink-0"><Trash2 className="w-5 h-5" /></div>
           <div>

@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api';
 import { getApiUrl, getEndpoint } from '@/config/api';
 
 export interface CustomerGroupMember {
@@ -144,7 +145,7 @@ class CustomerService {
     }
 
     // Backend: POST /api/CustomerGroup/member/list (gövde ile)
-    const response = await fetch(getApiUrl(getEndpoint('CUSTOMER_GROUPS')), {
+    const response = await apiFetch(getApiUrl(getEndpoint('CUSTOMER_GROUPS')), {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -167,7 +168,7 @@ class CustomerService {
       throw new Error('Token bulunamadı');
     }
 
-    const response = await fetch(getApiUrl(getEndpoint('CUSTOMER_LIST')), {
+    const response = await apiFetch(getApiUrl(getEndpoint('CUSTOMER_LIST')), {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -190,7 +191,7 @@ class CustomerService {
       throw new Error('Token bulunamadı');
     }
 
-    const response = await fetch(getApiUrl(getEndpoint('CUSTOMER_GROUP_LIST')), {
+    const response = await apiFetch(getApiUrl(getEndpoint('CUSTOMER_GROUP_LIST')), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -212,7 +213,7 @@ class CustomerService {
       throw new Error('Token bulunamadı');
     }
 
-    const response = await fetch(getApiUrl(getEndpoint('CUSTOMER_GROUP_ADD')), {
+    const response = await apiFetch(getApiUrl(getEndpoint('CUSTOMER_GROUP_ADD')), {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -237,7 +238,7 @@ class CustomerService {
 
     console.log('Sending request to add customer to group:', request);
 
-    const response = await fetch(getApiUrl(getEndpoint('CUSTOMER_GROUP_MEMBER_ADD')), {
+    const response = await apiFetch(getApiUrl(getEndpoint('CUSTOMER_GROUP_MEMBER_ADD')), {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -281,7 +282,7 @@ class CustomerService {
     }
 
     // Artık Customer/List endpoint'ini kullanıyoruz
-    const response = await fetch(getApiUrl(getEndpoint('CUSTOMER_LIST')), {
+    const response = await apiFetch(getApiUrl(getEndpoint('CUSTOMER_LIST')), {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -321,7 +322,7 @@ class CustomerService {
       throw new Error('Token bulunamadı');
     }
 
-    const response = await fetch(getApiUrl(`${getEndpoint('CUSTOMER_GROUP_DELETE')}/${groupId}`), {
+    const response = await apiFetch(getApiUrl(`${getEndpoint('CUSTOMER_GROUP_DELETE')}/${groupId}`), {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -342,7 +343,7 @@ class CustomerService {
   }
 
   async getCustomers(search = '', page = 1, pageSize = 500): Promise<{ items: CustomerDetail[]; total: number }> {
-    const res = await fetch(getApiUrl(getEndpoint('CUSTOMER_LIST')), {
+    const res = await apiFetch(getApiUrl(getEndpoint('CUSTOMER_LIST')), {
       method: 'POST', headers: this.jsonHeaders(), body: JSON.stringify({ search, page, pageSize }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -351,7 +352,7 @@ class CustomerService {
   }
 
   async createCustomer(req: CustomerSaveRequest): Promise<number> {
-    const res = await fetch(getApiUrl(getEndpoint('CUSTOMERS')), {
+    const res = await apiFetch(getApiUrl(getEndpoint('CUSTOMERS')), {
       method: 'POST', headers: this.jsonHeaders(), body: JSON.stringify(req),
     });
     const body = await res.json().catch(() => null);
@@ -360,7 +361,7 @@ class CustomerService {
   }
 
   async updateCustomer(id: number, req: CustomerSaveRequest): Promise<void> {
-    const res = await fetch(`${getApiUrl(getEndpoint('CUSTOMERS'))}/${id}`, {
+    const res = await apiFetch(`${getApiUrl(getEndpoint('CUSTOMERS'))}/${id}`, {
       method: 'PUT', headers: this.jsonHeaders(), body: JSON.stringify(req),
     });
     const body = await res.json().catch(() => null);
@@ -368,7 +369,7 @@ class CustomerService {
   }
 
   async deleteCustomer(id: number): Promise<void> {
-    const res = await fetch(`${getApiUrl(getEndpoint('CUSTOMERS'))}/${id}`, {
+    const res = await apiFetch(`${getApiUrl(getEndpoint('CUSTOMERS'))}/${id}`, {
       method: 'DELETE', headers: this.jsonHeaders(),
     });
     const body = await res.json().catch(() => null);

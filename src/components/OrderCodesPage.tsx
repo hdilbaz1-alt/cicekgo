@@ -112,7 +112,7 @@ function CodeModal({ code, onClose, onSaved }: { code: OrderCode | null; onClose
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-sm max-h-[92vh] overflow-y-auto p-6 sm:p-7">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-sm max-h-[92dvh] overflow-y-auto p-6 sm:p-7">
         <h3 className="text-lg font-bold mb-4">{isEdit ? 'Kodu Düzenle' : 'Yeni Sipariş Kodu'}</h3>
         <div className="space-y-3">
           <div><label className="text-xs font-medium text-slate-600">Kod Ön Eki</label><input className={inputCls + ' mt-1'} value={startCode} onChange={(e) => setStartCode(e.target.value)} placeholder="örn. SIP" autoFocus /></div>

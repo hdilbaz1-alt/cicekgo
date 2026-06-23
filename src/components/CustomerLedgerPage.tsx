@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BASE_URL, ENDPOINTS } from '../config/api';
@@ -46,7 +47,7 @@ export default function CustomerLedgerPage({ initialFilter, initialCustomerId }:
   const loadBalances = useCallback(async (): Promise<Balance[]> => {
     setLoading(true); setError('');
     try {
-      const res = await fetch(`${BASE_URL}${ENDPOINTS.CUSTOMER_LEDGER_BALANCES}`, { headers: headers() });
+      const res = await apiFetch(`${BASE_URL}${ENDPOINTS.CUSTOMER_LEDGER_BALANCES}`, { headers: headers() });
       const body = await res.json();
       if (!res.ok || body.success === false) throw new Error(body.message || 'Yüklenemedi');
       const arr = (body.data || []) as Balance[];
@@ -59,7 +60,7 @@ export default function CustomerLedgerPage({ initialFilter, initialCustomerId }:
   const loadLedger = useCallback(async (customerId: number) => {
     setLedgerLoading(true);
     try {
-      const res = await fetch(`${BASE_URL}${ENDPOINTS.CUSTOMER_LEDGER_LIST}`, {
+      const res = await apiFetch(`${BASE_URL}${ENDPOINTS.CUSTOMER_LEDGER_LIST}`, {
         method: 'POST', headers: headers(), body: JSON.stringify({ customerId, page: 1, pageSize: 200 }),
       });
       const body = await res.json();
@@ -71,7 +72,7 @@ export default function CustomerLedgerPage({ initialFilter, initialCustomerId }:
   useEffect(() => { loadBalances(); }, [loadBalances]);
   useEffect(() => {
     (async () => {
-      try { const r = await fetch(`${BASE_URL}${ENDPOINTS.TENANT_PING}`, { headers: headers() }); const b = await r.json(); if (b.success) setCompanyName(b.data.name); } catch { /* yoksay */ }
+      try { const r = await apiFetch(`${BASE_URL}${ENDPOINTS.TENANT_PING}`, { headers: headers() }); const b = await r.json(); if (b.success) setCompanyName(b.data.name); } catch { /* yoksay */ }
     })();
   }, []);
 
@@ -192,7 +193,7 @@ export default function CustomerLedgerPage({ initialFilter, initialCustomerId }:
 
         <div className="grid lg:grid-cols-[380px_1fr] gap-5">
           {/* Sol: müşteri bakiyeleri */}
-          <div className={`bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex-col lg:max-h-[75vh] ${selected ? 'hidden lg:flex' : 'flex'}`}>
+          <div className={`bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex-col lg:max-h-[75dvh] ${selected ? 'hidden lg:flex' : 'flex'}`}>
             <div className="p-4 border-b border-slate-100 space-y-3">
               <div className="relative">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -289,7 +290,7 @@ export default function CustomerLedgerPage({ initialFilter, initialCustomerId }:
                     </div>
                   );
                 })()}
-                <div className="overflow-y-auto max-h-[55vh] lg:max-h-[60vh]">
+                <div className="overflow-y-auto max-h-[55dvh] lg:max-h-[60dvh]">
                   {ledgerLoading ? <div className="p-8 text-center text-slate-400">Yükleniyor…</div>
                     : ledger.length === 0 ? <div className="p-8 text-center text-slate-400">Hareket yok.</div>
                     : (
@@ -372,7 +373,7 @@ function PayoutModal({ customer, onClose, onSaved }: { customer: Balance; onClos
     if (!methodId) return setErr('Ödeme yöntemi seçin');
     setBusy(true); setErr('');
     try {
-      const res = await fetch(`${BASE_URL}${ENDPOINTS.CUSTOMER_LEDGER_PAYOUT}`, {
+      const res = await apiFetch(`${BASE_URL}${ENDPOINTS.CUSTOMER_LEDGER_PAYOUT}`, {
         method: 'POST', headers: headers(),
         body: JSON.stringify({ customerId: customer.customerId, amount: a, description: desc, paymentMethodId: Number(methodId), paymentDate: new Date().toISOString() }),
       });
@@ -385,7 +386,7 @@ function PayoutModal({ customer, onClose, onSaved }: { customer: Balance; onClos
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-sm max-h-[92vh] overflow-y-auto p-6 sm:p-7">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-sm max-h-[92dvh] overflow-y-auto p-6 sm:p-7">
         <h3 className="text-lg font-bold mb-1">Alacağı Öde</h3>
         <p className="text-sm text-slate-500 mb-4">{customer.customerName} · alacak <b className="text-emerald-600">{money(max)}</b></p>
         <div className="space-y-3">
@@ -471,7 +472,7 @@ function PaymentModal({ customer, onClose, onSaved }: { customer: Balance; onClo
       ? { customerId: customer.customerId, orderCode: orderCode.trim(), amount: a, description: desc, paymentMethodId: Number(methodId), paymentDate }
       : { customerId: customer.customerId, amount: a, description: desc, paymentMethodId: Number(methodId), paymentDate };
     try {
-      const res = await fetch(`${BASE_URL}${ep}`, { method: 'POST', headers: headers(), body: JSON.stringify(payload) });
+      const res = await apiFetch(`${BASE_URL}${ep}`, { method: 'POST', headers: headers(), body: JSON.stringify(payload) });
       const b = await res.json();
       if (!res.ok || b.success === false) throw new Error(b.message || 'Eklenemedi');
       onSaved();
@@ -483,7 +484,7 @@ function PaymentModal({ customer, onClose, onSaved }: { customer: Balance; onClo
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md max-h-[92vh] overflow-y-auto p-6 sm:p-7">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md max-h-[92dvh] overflow-y-auto p-6 sm:p-7">
         <h3 className="text-lg font-bold mb-1">Tahsilat Al</h3>
         <p className="text-sm text-slate-500 mb-4">{customer.customerName}</p>
         <div className="flex gap-2 mb-4">

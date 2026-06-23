@@ -13,9 +13,10 @@ public class DashboardService : IDashboardService
     {
         var (f, tt) = DateRange.Utc(from, to);
 
+        // Siparişler sayfasıyla tutarlı olsun diye TESLİMAT tarihine göre filtrele (CreatedAt değil).
         var orders = _db.Orders.AsNoTracking().AsQueryable();
-        if (f.HasValue) orders = orders.Where(o => o.CreatedAt >= f.Value);
-        if (tt.HasValue) orders = orders.Where(o => o.CreatedAt < tt.Value);
+        if (f.HasValue) orders = orders.Where(o => o.DeliveryDate >= f.Value);
+        if (tt.HasValue) orders = orders.Where(o => o.DeliveryDate < tt.Value);
 
         var cash = _db.CashMovements.AsNoTracking().AsQueryable();
         if (f.HasValue) cash = cash.Where(c => c.TransactionDate >= f.Value);
@@ -58,10 +59,10 @@ public class DashboardService : IDashboardService
                 Out = g.Where(x => x.Direction == "OUT").Sum(x => x.Amount)
             }).ToList();
 
-        // Günlük satış serisi (sipariş tutarı)
-        var ordRows = await orders.Select(o => new { o.CreatedAt, o.Amount }).ToListAsync(ct);
+        // Günlük satış serisi (sipariş tutarı) — teslimat tarihine göre
+        var ordRows = await orders.Where(o => o.DeliveryDate != null).Select(o => new { o.DeliveryDate, o.Amount }).ToListAsync(ct);
         dto.SalesSeries = ordRows
-            .GroupBy(o => o.CreatedAt.Date)
+            .GroupBy(o => o.DeliveryDate!.Value.Date)
             .OrderBy(g => g.Key)
             .Select(g => new SalesPointDto { Date = g.Key.ToString("yyyy-MM-dd"), Total = g.Sum(x => x.Amount), Count = g.Count() })
             .ToList();

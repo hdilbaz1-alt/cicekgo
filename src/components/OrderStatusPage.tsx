@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BASE_URL, ENDPOINTS } from '@/config/api';
@@ -31,7 +32,7 @@ export default function OrderStatusPage() {
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const res = await fetch(`${BASE_URL}${ENDPOINTS.ORDER_STATUS_LIST}`, { headers: headers() });
+      const res = await apiFetch(`${BASE_URL}${ENDPOINTS.ORDER_STATUS_LIST}`, { headers: headers() });
       const b = await res.json();
       setItems(b.data || []);
       clearStatusColorCache();
@@ -43,14 +44,14 @@ export default function OrderStatusPage() {
   const add = async () => {
     if (!newName.trim()) return;
     try {
-      const res = await fetch(`${BASE_URL}${ENDPOINTS.ORDER_STATUS_ADD}`, { method: 'POST', headers: headers(), body: JSON.stringify({ statusName: newName.trim(), color: PALETTE[0] }) });
+      const res = await apiFetch(`${BASE_URL}${ENDPOINTS.ORDER_STATUS_ADD}`, { method: 'POST', headers: headers(), body: JSON.stringify({ statusName: newName.trim(), color: PALETTE[0] }) });
       if (!res.ok) throw new Error();
       setNewName(''); showToast('Durum eklendi'); load();
     } catch { alert('Eklenemedi'); }
   };
   const update = async (s: OrderStatus, patch: { statusName?: string; color?: string }) => {
     try {
-      const res = await fetch(`${BASE_URL}${ENDPOINTS.ORDER_STATUS_UPDATE}/${s.id}`, { method: 'PUT', headers: headers(), body: JSON.stringify({ statusName: patch.statusName ?? s.statusName, color: patch.color ?? s.color }) });
+      const res = await apiFetch(`${BASE_URL}${ENDPOINTS.ORDER_STATUS_UPDATE}/${s.id}`, { method: 'PUT', headers: headers(), body: JSON.stringify({ statusName: patch.statusName ?? s.statusName, color: patch.color ?? s.color }) });
       if (!res.ok) throw new Error();
       load();
     } catch { alert('Güncellenemedi'); }
@@ -59,14 +60,14 @@ export default function OrderStatusPage() {
     if (s.isSystem) return;
     if (!confirm(`"${s.statusName}" durumunu silmek istediğinize emin misiniz?`)) return;
     try {
-      const res = await fetch(`${BASE_URL}${ENDPOINTS.ORDER_STATUS_DELETE}/${s.id}`, { method: 'DELETE', headers: headers() });
+      const res = await apiFetch(`${BASE_URL}${ENDPOINTS.ORDER_STATUS_DELETE}/${s.id}`, { method: 'DELETE', headers: headers() });
       if (!res.ok) throw new Error();
       showToast('Silindi'); load();
     } catch { alert('Silinemedi'); }
   };
 
   const persistOrder = async (list: OrderStatus[]) => {
-    try { await fetch(`${BASE_URL}${ENDPOINTS.ORDER_STATUS_REORDER}`, { method: 'POST', headers: headers(), body: JSON.stringify({ ids: list.map((x) => x.id) }) }); }
+    try { await apiFetch(`${BASE_URL}${ENDPOINTS.ORDER_STATUS_REORDER}`, { method: 'POST', headers: headers(), body: JSON.stringify({ ids: list.map((x) => x.id) }) }); }
     catch { /* yoksay */ }
   };
   const onDrop = (targetId: number) => {

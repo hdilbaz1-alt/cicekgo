@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getApiUrl, getEndpoint } from '@/config/api';
@@ -54,7 +55,7 @@ export default function ReportsPage() {
     const { from, to } = computeRange();
     const p = new URLSearchParams(); if (from) p.set('from', from); if (to) p.set('to', to);
     try {
-      const res = await fetch(`${getApiUrl(getEndpoint(current.endpoint as never))}?${p}`, { headers: headers() });
+      const res = await apiFetch(`${getApiUrl(getEndpoint(current.endpoint as never))}?${p}`, { headers: headers() });
       const body = await res.json();
       if (body.success) setData(body.data);
     } catch { /* yoksay */ }

@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -38,7 +39,7 @@ export default function ProfileModal({ isOpen, onClose, tenantInfo, remainingDay
   return createPortal((
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 overflow-y-auto">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-lg sm:my-6 max-h-[92vh] overflow-y-auto">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-lg sm:my-6 max-h-[92dvh] overflow-y-auto">
         {/* Üst */}
         <div className="bg-gradient-to-br from-blue-600 to-indigo-600 px-6 py-5 text-white relative">
           <button onClick={onClose} className="absolute top-4 right-4 text-white/80 hover:text-white text-2xl leading-none">×</button>
@@ -126,7 +127,7 @@ function CompanyTab({ onClose }: { onClose: () => void }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(getApiUrl(getEndpoint('COMPANY_PROFILE')), { headers: headers() });
+      const res = await apiFetch(getApiUrl(getEndpoint('COMPANY_PROFILE')), { headers: headers() });
       const b = await res.json();
       if (b.success) { setName(b.data.name); setLogo(b.data.logoBase64); setRemoveBg(b.data.logoRemoveBg); }
     } catch { /* yoksay */ } finally { setLoading(false); }
@@ -146,7 +147,7 @@ function CompanyTab({ onClose }: { onClose: () => void }) {
   const save = async () => {
     setBusy(true); setErr('');
     try {
-      const res = await fetch(getApiUrl(getEndpoint('COMPANY_PROFILE')), {
+      const res = await apiFetch(getApiUrl(getEndpoint('COMPANY_PROFILE')), {
         method: 'PUT', headers: headers(), body: JSON.stringify({ name, logoBase64: logo ?? '', logoRemoveBg: removeBg }),
       });
       const b = await res.json();

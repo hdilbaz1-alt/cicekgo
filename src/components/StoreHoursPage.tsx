@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api';
 
 import { useCallback, useEffect, useState } from 'react';
 import { getApiUrl, getEndpoint } from '@/config/api';
@@ -19,7 +20,7 @@ export default function StoreHoursPage() {
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const res = await fetch(getApiUrl(getEndpoint('STORE_SETTINGS')), { headers: headers() });
+      const res = await apiFetch(getApiUrl(getEndpoint('STORE_SETTINGS')), { headers: headers() });
       const body = await res.json();
       if (body.success) setS(body.data);
     } catch (e) { setError(e instanceof Error ? e.message : 'Yüklenemedi'); }
@@ -30,7 +31,7 @@ export default function StoreHoursPage() {
   const save = async () => {
     setBusy(true); setError('');
     try {
-      const res = await fetch(getApiUrl(getEndpoint('STORE_SETTINGS')), {
+      const res = await apiFetch(getApiUrl(getEndpoint('STORE_SETTINGS')), {
         method: 'PUT', headers: headers(),
         body: JSON.stringify({ openTime: s.openTime, closeTime: s.closeTime, slotMinutes: s.slotMinutes }),
       });

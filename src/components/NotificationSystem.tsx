@@ -178,7 +178,7 @@ function ToastNotification({ notification, onClose }: { notification: Notificati
   };
 
   return (
-    <div className={`min-w-[320px] max-w-lg bg-white shadow-xl rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden border ${getColors()}`}>
+    <div className={`w-[calc(100vw-2rem)] max-w-sm sm:max-w-md bg-white shadow-xl rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden border ${getColors()}`}>
       <div className="px-5 py-4">
         <div className="flex items-start">
           <div className="flex-shrink-0 mt-0.5">

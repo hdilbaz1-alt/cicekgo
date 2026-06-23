@@ -26,7 +26,10 @@ import PrintTemplatesPage from '@/components/PrintTemplatesPage';
 import PaymentMethodsPage from '@/components/PaymentMethodsPage';
 import AddressSettingsPage from '@/components/AddressSettingsPage';
 import NonCariPage from '@/components/NonCariPage';
+import NotificationsPage from '@/components/NotificationsPage';
+import MorePage from '@/components/MorePage';
 import CommandPalette from '@/components/CommandPalette';
+import { Search } from 'lucide-react';
 import SuperAdminPanel from '@/components/SuperAdminPanel';
 
 import { authService } from '@/services/authService';
@@ -38,7 +41,7 @@ const PAGE_TITLES: Record<string, string> = {
   'deleted-orders': 'Silinen Siparişler', 'audit-log': 'İşlem Kayıtları', 'order-codes': 'Sipariş Kodları',
   units: 'Birim Ayarları', 'store-hours': 'Çalışma Saatleri', 'order-status': 'Sipariş Durumları',
   'print-templates': 'Yazdırma Şablonları', 'payment-methods': 'Ödeme Yöntemleri',
-  'address-settings': 'Varsayılan Adres',
+  'address-settings': 'Varsayılan Adres', notifications: 'Bildirimler',
 };
 
 export default function HomePage() {
@@ -46,7 +49,6 @@ export default function HomePage() {
   const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean | null>(null);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [navOpts, setNavOpts] = useState<Record<string, unknown>>({});
@@ -79,6 +81,17 @@ export default function HomePage() {
     }
   }, [router]);
 
+  // Push bildiriminden derin bağlantı: /?go=order&code=XXX → siparişi aç
+  useEffect(() => {
+    if (!user) return;
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get('go') === 'order' && sp.get('code')) {
+      setCurrentPage('orders');
+      setNavOpts({ openOrderCode: sp.get('code')! });
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, [user]);
+
   const handleLogout = () => {
     authService.clearToken();
     router.push('/login');
@@ -92,21 +105,9 @@ export default function HomePage() {
   const handlePageChange = (page: string, opts?: Record<string, unknown>) => {
     setCurrentPage(page);
     setNavOpts(opts || {});
-    // Mobile sidebar'ı kapat
-    setMobileSidebarOpen(false);
   };
 
-  const handleSidebarToggle = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
-    // Mobile'da sidebar kapalıysa aç
-    if (mobileSidebarOpen) {
-      setMobileSidebarOpen(false);
-    }
-  };
-
-  const handleMobileSidebarToggle = () => {
-    setMobileSidebarOpen(!mobileSidebarOpen);
-  };
+  const handleSidebarToggle = () => setSidebarCollapsed((v) => !v);
 
   const renderCurrentPage = () => {
     switch (currentPage) {
@@ -119,6 +120,7 @@ export default function HomePage() {
             isCreateModalOpen={isCreateModalOpen}
             onCloseModal={() => setIsCreateModalOpen(false)}
             focus={navOpts.focus as string | undefined}
+            openOrderCode={navOpts.openOrderCode as string | undefined}
             onNavigate={handlePageChange}
           />
         );
@@ -160,6 +162,10 @@ export default function HomePage() {
         return <PaymentMethodsPage />;
       case 'address-settings':
         return <AddressSettingsPage />;
+      case 'notifications':
+        return <NotificationsPage />;
+      case 'more':
+        return <MorePage onNavigate={handlePageChange} onLogout={handleLogout} />;
       default:
         return (
           <div className="p-6">
@@ -187,40 +193,40 @@ export default function HomePage() {
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Mobile Sidebar Overlay */}
-      {mobileSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setMobileSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div className={`${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out fixed inset-y-0 left-0 lg:static z-50 shadow-2xl lg:shadow-none`}>
+      {/* Masaüstü: sidebar (sol menü) */}
+      <div className="hidden lg:block">
         <Sidebar
           isCollapsed={sidebarCollapsed}
           onToggle={handleSidebarToggle}
           onPageChange={handlePageChange}
           currentPage={currentPage}
-          onCreateOrder={() => {
-            handlePageChange('orders');
-            setIsCreateModalOpen(true);
-          }}
+          onCreateOrder={() => { handlePageChange('orders'); setIsCreateModalOpen(true); }}
         />
       </div>
 
-      {/* Main Content */}
+      {/* Ana içerik */}
       <div className="flex-1 flex flex-col transition-all duration-300 min-w-0">
-        {/* Header */}
-        <Header
-          user={user}
-          onLogout={handleLogout}
-          onMenuClick={handleMobileSidebarToggle}
-          onSearchClick={() => setCmdOpen(true)}
-          title={PAGE_TITLES[currentPage]}
-        />
+        {/* Masaüstü başlık */}
+        <div className="hidden lg:block">
+          <Header
+            user={user}
+            onLogout={handleLogout}
+            onMenuClick={() => {}}
+            onSearchClick={() => setCmdOpen(true)}
+            title={PAGE_TITLES[currentPage]}
+          />
+        </div>
 
-        {/* Dynamic Content Area */}
+        {/* Mobil: üst app-bar (mobile-first) */}
+        <header className="lg:hidden shrink-0 bg-white/95 backdrop-blur border-b border-slate-100 h-14 px-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0">
+            <img src="/cicekgologo.png" alt="ÇiçekGo" className="h-7 w-auto object-contain" />
+            <span className="font-semibold text-slate-800 truncate">{PAGE_TITLES[currentPage] || ''}</span>
+          </div>
+          <button onClick={() => setCmdOpen(true)} title="Ara" className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100"><Search className="w-5 h-5" /></button>
+        </header>
+
+        {/* İçerik */}
         <main className="flex-1 overflow-auto pb-16 lg:pb-0">
           <div key={currentPage} className="animate-in h-full">
             {renderCurrentPage()}
@@ -228,11 +234,10 @@ export default function HomePage() {
         </main>
       </div>
 
-      {/* Bottom Navigation - Mobile Only */}
+      {/* Mobil alt navigasyon */}
       <BottomNavigation
         currentPage={currentPage}
         onPageChange={handlePageChange}
-        onSidebarToggle={handleMobileSidebarToggle}
       />
 
       <CommandPalette

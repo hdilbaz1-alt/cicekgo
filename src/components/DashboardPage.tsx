@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getApiUrl, getEndpoint } from '@/config/api';
@@ -65,7 +66,7 @@ export default function DashboardPage({ onNavigate }: { onNavigate?: (p: string,
     const { from, to } = computeRange();
     const p = new URLSearchParams(); if (from) p.set('from', from); if (to) p.set('to', to);
     try {
-      const res = await fetch(`${getApiUrl(getEndpoint('DASHBOARD_SUMMARY'))}?${p}`, { headers: headers() });
+      const res = await apiFetch(`${getApiUrl(getEndpoint('DASHBOARD_SUMMARY'))}?${p}`, { headers: headers() });
       if (res.status === 403) { setDenied(true); return; }
       const body = await res.json();
       if (body.success) setS(body.data);

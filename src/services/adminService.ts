@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api';
 import { getApiUrl, getEndpoint } from '@/config/api';
 
 const ADMIN = () => getApiUrl(getEndpoint('ADMIN_TENANTS'));        // /api/Admin/tenants
@@ -92,92 +93,92 @@ async function handle<T>(res: Response): Promise<T> {
 export const adminService = {
   // ---- Tenants (firmalar) ----
   async listTenants(): Promise<TenantDto[]> {
-    return handle<TenantDto[]>(await fetch(ADMIN(), { headers: authHeaders() }));
+    return handle<TenantDto[]>(await apiFetch(ADMIN(), { headers: authHeaders() }));
   },
 
   async createTenant(req: CreateTenantRequest): Promise<TenantDto> {
-    return handle<TenantDto>(await fetch(ADMIN(), {
+    return handle<TenantDto>(await apiFetch(ADMIN(), {
       method: 'POST', headers: authHeaders(), body: JSON.stringify(req),
     }));
   },
 
   async updateTenant(id: number, req: UpdateTenantRequest): Promise<TenantDto> {
-    return handle<TenantDto>(await fetch(`${ADMIN()}/${id}`, {
+    return handle<TenantDto>(await apiFetch(`${ADMIN()}/${id}`, {
       method: 'PUT', headers: authHeaders(), body: JSON.stringify(req),
     }));
   },
 
   async deleteTenant(id: number, dropDatabase = false): Promise<void> {
-    await handle<string>(await fetch(`${ADMIN()}/${id}?dropDatabase=${dropDatabase}`, {
+    await handle<string>(await apiFetch(`${ADMIN()}/${id}?dropDatabase=${dropDatabase}`, {
       method: 'DELETE', headers: authHeaders(),
     }));
   },
 
   // ---- Kullanıcılar (firma alt kullanıcıları) ----
   async listUsers(tenantId: number): Promise<UserDto[]> {
-    return handle<UserDto[]>(await fetch(`${ADMIN()}/${tenantId}/users`, { headers: authHeaders() }));
+    return handle<UserDto[]>(await apiFetch(`${ADMIN()}/${tenantId}/users`, { headers: authHeaders() }));
   },
 
   async createUser(tenantId: number, req: CreateUserRequest): Promise<UserDto> {
-    return handle<UserDto>(await fetch(`${ADMIN()}/${tenantId}/users`, {
+    return handle<UserDto>(await apiFetch(`${ADMIN()}/${tenantId}/users`, {
       method: 'POST', headers: authHeaders(), body: JSON.stringify(req),
     }));
   },
 
   async updateUser(tenantId: number, userId: number, req: UpdateUserRequest): Promise<UserDto> {
-    return handle<UserDto>(await fetch(`${ADMIN()}/${tenantId}/users/${userId}`, {
+    return handle<UserDto>(await apiFetch(`${ADMIN()}/${tenantId}/users/${userId}`, {
       method: 'PUT', headers: authHeaders(), body: JSON.stringify(req),
     }));
   },
 
   async deleteUser(tenantId: number, userId: number): Promise<void> {
-    await handle<string>(await fetch(`${ADMIN()}/${tenantId}/users/${userId}`, {
+    await handle<string>(await apiFetch(`${ADMIN()}/${tenantId}/users/${userId}`, {
       method: 'DELETE', headers: authHeaders(),
     }));
   },
 
   // ---- Roller ----
   async listRoles(tenantId: number): Promise<RoleDto[]> {
-    return handle<RoleDto[]>(await fetch(`${ADMIN()}/${tenantId}/roles`, { headers: authHeaders() }));
+    return handle<RoleDto[]>(await apiFetch(`${ADMIN()}/${tenantId}/roles`, { headers: authHeaders() }));
   },
 
   // ---- İzin kataloğu ----
   async listPermissions(): Promise<PermissionDto[]> {
-    return handle<PermissionDto[]>(await fetch(PERMS(), { headers: authHeaders() }));
+    return handle<PermissionDto[]>(await apiFetch(PERMS(), { headers: authHeaders() }));
   },
 
   // ================= Firma içi (Firma Sahibi) — kendi firmasının kullanıcı/rolleri =================
   async listMyUsers(): Promise<UserDto[]> {
-    return handle<UserDto[]>(await fetch(getApiUrl(getEndpoint('ADMIN_USERS')), { headers: authHeaders() }));
+    return handle<UserDto[]>(await apiFetch(getApiUrl(getEndpoint('ADMIN_USERS')), { headers: authHeaders() }));
   },
   async createMyUser(req: CreateUserRequest): Promise<UserDto> {
-    return handle<UserDto>(await fetch(getApiUrl(getEndpoint('ADMIN_USERS')), {
+    return handle<UserDto>(await apiFetch(getApiUrl(getEndpoint('ADMIN_USERS')), {
       method: 'POST', headers: authHeaders(), body: JSON.stringify(req),
     }));
   },
   async updateMyUser(userId: number, req: UpdateUserRequest): Promise<UserDto> {
-    return handle<UserDto>(await fetch(`${getApiUrl(getEndpoint('ADMIN_USERS'))}/${userId}`, {
+    return handle<UserDto>(await apiFetch(`${getApiUrl(getEndpoint('ADMIN_USERS'))}/${userId}`, {
       method: 'PUT', headers: authHeaders(), body: JSON.stringify(req),
     }));
   },
   async deleteMyUser(userId: number): Promise<void> {
-    await handle<string>(await fetch(`${getApiUrl(getEndpoint('ADMIN_USERS'))}/${userId}`, {
+    await handle<string>(await apiFetch(`${getApiUrl(getEndpoint('ADMIN_USERS'))}/${userId}`, {
       method: 'DELETE', headers: authHeaders(),
     }));
   },
   async listMyRoles(): Promise<RoleDto[]> {
-    return handle<RoleDto[]>(await fetch(getApiUrl(getEndpoint('ADMIN_ROLES')), { headers: authHeaders() }));
+    return handle<RoleDto[]>(await apiFetch(getApiUrl(getEndpoint('ADMIN_ROLES')), { headers: authHeaders() }));
   },
   async listCouriers(): Promise<UserDto[]> {
-    return handle<UserDto[]>(await fetch(`${getApiUrl('/api/Admin/couriers')}`, { headers: authHeaders() }));
+    return handle<UserDto[]>(await apiFetch(`${getApiUrl('/api/Admin/couriers')}`, { headers: authHeaders() }));
   },
 
   // ---- Platform geneli ayarlar (Google Maps anahtarı) — yalnız süperadmin ----
   async getPlatformSettings(): Promise<{ googleMapsApiKey: string | null }> {
-    return handle<{ googleMapsApiKey: string | null }>(await fetch(getApiUrl(getEndpoint('ADMIN_PLATFORM_SETTINGS')), { headers: authHeaders() }));
+    return handle<{ googleMapsApiKey: string | null }>(await apiFetch(getApiUrl(getEndpoint('ADMIN_PLATFORM_SETTINGS')), { headers: authHeaders() }));
   },
   async savePlatformSettings(googleMapsApiKey: string | null): Promise<void> {
-    await handle(await fetch(getApiUrl(getEndpoint('ADMIN_PLATFORM_SETTINGS')), {
+    await handle(await apiFetch(getApiUrl(getEndpoint('ADMIN_PLATFORM_SETTINGS')), {
       method: 'PUT', headers: authHeaders(), body: JSON.stringify({ googleMapsApiKey }),
     }));
   },

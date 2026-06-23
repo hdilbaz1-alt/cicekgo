@@ -96,6 +96,10 @@ using (var scope = app.Services.CreateScope())
     var seeder = scope.ServiceProvider.GetRequiredService<MasterSeeder>();
     await seeder.RunAsync();
 
+    // VAPID anahtarlarını (Web Push) yoksa üret
+    var platform = scope.ServiceProvider.GetRequiredService<CicekGo.Application.Platform.IPlatformSettingsService>();
+    await platform.EnsureVapidAsync();
+
     // Mevcut firma DB'lerine bekleyen şema güncellemelerini uygula
     var tenantMigrator = scope.ServiceProvider.GetRequiredService<CicekGo.Infrastructure.Provisioning.TenantMigrator>();
     await tenantMigrator.MigrateAllAsync();

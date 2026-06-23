@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api';
 import { getApiUrl, getEndpoint } from '@/config/api';
 
 const API_BASE_URL = getApiUrl('/api');
@@ -236,7 +237,7 @@ class OrderService {
       throw new Error('Token bulunamadı');
     }
 
-    const response = await fetch(`${API_BASE_URL}/Orders/list`, {
+    const response = await apiFetch(`${API_BASE_URL}/Orders/list`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -253,20 +254,20 @@ class OrderService {
   }
 
   async getLedger(orderCode: string): Promise<OrderLedger> {
-    const res = await fetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}/ledger`, { headers: this.authHeaders() });
+    const res = await apiFetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}/ledger`, { headers: this.authHeaders() });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const b = await res.json();
     return b.data as OrderLedger;
   }
 
   async payOrder(orderCode: string, body: { amount: number; paymentMethodId?: number; paymentDate?: string; description?: string }): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}/pay`, { method: 'POST', headers: this.authHeaders(), body: JSON.stringify(body) });
+    const res = await apiFetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}/pay`, { method: 'POST', headers: this.authHeaders(), body: JSON.stringify(body) });
     const b = await res.json().catch(() => ({}));
     if (!res.ok || b.success === false) throw new Error(b.message || 'Tahsilat eklenemedi');
   }
 
   async refundOrder(orderCode: string, body: { amount: number; paymentMethodId?: number; refundDate?: string; note?: string }): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}/refund`, { method: 'POST', headers: this.authHeaders(), body: JSON.stringify(body) });
+    const res = await apiFetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}/refund`, { method: 'POST', headers: this.authHeaders(), body: JSON.stringify(body) });
     const b = await res.json().catch(() => ({}));
     if (!res.ok || b.success === false) throw new Error(b.message || 'İade eklenemedi');
   }
@@ -275,7 +276,7 @@ class OrderService {
     const p = new URLSearchParams();
     if (q) p.set('q', q);
     if (nonCariOnly) p.set('nonCariOnly', 'true');
-    const res = await fetch(`${API_BASE_URL}/Orders/search?${p}`, { headers: this.authHeaders() });
+    const res = await apiFetch(`${API_BASE_URL}/Orders/search?${p}`, { headers: this.authHeaders() });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const b = await res.json();
     return b.success ? (b.data as OrderItem[]) : [];
@@ -287,7 +288,7 @@ class OrderService {
       throw new Error('Token bulunamadı');
     }
 
-    const response = await fetch(`${API_BASE_URL}/Orders`, {
+    const response = await apiFetch(`${API_BASE_URL}/Orders`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -310,7 +311,7 @@ class OrderService {
       throw new Error('Token bulunamadı');
     }
 
-    const response = await fetch(`${API_BASE_URL}/Orders/${orderCode}`, {
+    const response = await apiFetch(`${API_BASE_URL}/Orders/${orderCode}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -335,7 +336,7 @@ class OrderService {
   }
 
   async deleteOrder(orderCode: string, opts?: { reason?: string; feeRefunded?: boolean; refundPlannedDate?: string | null; refundPaymentMethodId?: number | null }): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}`, {
+    const res = await apiFetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}`, {
       method: 'DELETE', headers: this.authHeaders(),
       body: JSON.stringify({
         reason: opts?.reason || null,
@@ -348,35 +349,35 @@ class OrderService {
   }
 
   async restoreOrder(orderCode: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}/restore`, {
+    const res = await apiFetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}/restore`, {
       method: 'POST', headers: this.authHeaders(),
     });
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
   }
 
   async getDeletedOrders(): Promise<DeletedOrderItem[]> {
-    const res = await fetch(`${API_BASE_URL}/Orders/deleted`, { headers: this.authHeaders() });
+    const res = await apiFetch(`${API_BASE_URL}/Orders/deleted`, { headers: this.authHeaders() });
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const body = await res.json();
     return body.data as DeletedOrderItem[];
   }
 
   async changeStatus(orderCode: string, status: string, note?: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}/change-status`, {
+    const res = await apiFetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}/change-status`, {
       method: 'POST', headers: this.authHeaders(), body: JSON.stringify({ status, note: note || null }),
     });
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
   }
 
   async assignCourier(orderCode: string, courierUserId: number | null): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}/assign-courier`, {
+    const res = await apiFetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}/assign-courier`, {
       method: 'POST', headers: this.authHeaders(), body: JSON.stringify({ courierUserId }),
     });
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
   }
 
   async getMyAssigned(request: OrderListRequest): Promise<OrderListResponse> {
-    const res = await fetch(`${API_BASE_URL}/Orders/my-assigned`, {
+    const res = await apiFetch(`${API_BASE_URL}/Orders/my-assigned`, {
       method: 'POST', headers: this.authHeaders(), body: JSON.stringify(request),
     });
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -384,7 +385,7 @@ class OrderService {
   }
 
   async getOrderDetail(orderCode: string): Promise<OrderItem> {
-    const res = await fetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}`, { headers: this.authHeaders() });
+    const res = await apiFetch(`${API_BASE_URL}/Orders/${encodeURIComponent(orderCode)}`, { headers: this.authHeaders() });
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const body = await res.json();
     return body.data as OrderItem;
@@ -412,7 +413,7 @@ export const getOrderCodes = async (): Promise<OrderCodeResponse> => {
     throw new Error('Token bulunamadı');
   }
 
-  const response = await fetch(getApiUrl(getEndpoint('ORDER_CODE_LIST')), {
+  const response = await apiFetch(getApiUrl(getEndpoint('ORDER_CODE_LIST')), {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -433,7 +434,7 @@ export const addOrderCode = async (data: OrderCodeAddRequest): Promise<OrderCode
     throw new Error('Token bulunamadı');
   }
 
-  const response = await fetch(getApiUrl(getEndpoint('ORDER_CODE_ADD')), {
+  const response = await apiFetch(getApiUrl(getEndpoint('ORDER_CODE_ADD')), {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -455,7 +456,7 @@ export const updateOrderCode = async (id: number, data: OrderCodeUpdateRequest):
     throw new Error('Token bulunamadı');
   }
 
-  const response = await fetch(getApiUrl(`${getEndpoint('ORDER_CODE_UPDATE')}/${id}`), {
+  const response = await apiFetch(getApiUrl(`${getEndpoint('ORDER_CODE_UPDATE')}/${id}`), {
     method: 'PUT',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -477,7 +478,7 @@ export const deleteOrderCode = async (id: number): Promise<OrderCodeResponse> =>
     throw new Error('Token bulunamadı');
   }
 
-  const response = await fetch(getApiUrl(`${getEndpoint('ORDER_CODE_DELETE')}/${id}`), {
+  const response = await apiFetch(getApiUrl(`${getEndpoint('ORDER_CODE_DELETE')}/${id}`), {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -499,7 +500,7 @@ export const getCustomerList = async (request: CustomerListRequest): Promise<Cus
     throw new Error('Token bulunamadı');
   }
 
-  const response = await fetch(getApiUrl(getEndpoint('CUSTOMER_LIST')), {
+  const response = await apiFetch(getApiUrl(getEndpoint('CUSTOMER_LIST')), {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,

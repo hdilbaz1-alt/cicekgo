@@ -9,6 +9,7 @@ import {
   CreateTenantRequest,
 } from '@/services/adminService';
 import { useEscClose } from '@/lib/useEscClose';
+import { pushService } from '@/services/pushService';
 
 /* ============================ Yardımcılar ============================ */
 
@@ -93,10 +94,10 @@ export default function SuperAdminPanel({ onLogout }: { onLogout: () => void }) 
   return (
     <div className="min-h-screen bg-[#f5f5f7] text-gray-900 flex">
       {/* Sol menü */}
-      <aside className="w-16 sm:w-60 shrink-0 bg-white border-r border-black/5 flex flex-col sticky top-0 h-screen">
-        <div className="h-16 px-3 sm:px-5 flex items-center gap-3 border-b border-black/5">
+      <aside className="w-60 shrink-0 bg-white border-r border-black/5 flex flex-col sticky top-0 h-screen">
+        <div className="h-16 px-5 flex items-center gap-3 border-b border-black/5">
           <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-lg shrink-0">Ç</div>
-          <div className="hidden sm:block min-w-0">
+          <div className="min-w-0">
             <div className="font-semibold leading-tight truncate">ÇiçekGo · Platform</div>
             <div className="text-xs text-gray-500 leading-tight">Süper Yönetici</div>
           </div>
@@ -108,10 +109,10 @@ export default function SuperAdminPanel({ onLogout }: { onLogout: () => void }) 
             icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z" />} />
         </nav>
         <div className="p-2 sm:p-3 border-t border-black/5">
-          <div className="hidden sm:block px-2 pb-1.5 text-xs text-gray-400 truncate">{me.userName}</div>
-          <button onClick={onLogout} className="w-full flex items-center justify-center sm:justify-start gap-2 px-2 py-2 rounded-xl text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-500 transition-colors">
+          <div className="block px-2 pb-1.5 text-xs text-gray-400 truncate">{me.userName}</div>
+          <button onClick={onLogout} className="w-full flex items-center justify-start gap-2 px-2 py-2 rounded-xl text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-500 transition-colors">
             <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-            <span className="hidden sm:inline">Çıkış</span>
+            <span className="inline">Çıkış</span>
           </button>
         </div>
       </aside>
@@ -213,9 +214,9 @@ function StatCard({ label, value, accent }: { label: string; value: number; acce
 function NavItem({ active, onClick, label, icon }: { active: boolean; onClick: () => void; label: string; icon: React.ReactNode }) {
   return (
     <button onClick={onClick} title={label}
-      className={`w-full flex items-center justify-center sm:justify-start gap-3 px-2 sm:px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${active ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}>
+      className={`w-full flex items-center justify-start gap-3 px-2 sm:px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${active ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}>
       <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">{icon}</svg>
-      <span className="hidden sm:inline">{label}</span>
+      <span className="inline">{label}</span>
     </button>
   );
 }
@@ -241,6 +242,18 @@ function PlatformSettingsSection({ onToast }: { onToast: (m: string, ok?: boolea
     finally { setBusy(false); }
   };
 
+  // Tüm platforma toplu bildirim
+  const [bTitle, setBTitle] = useState('');
+  const [bBody, setBBody] = useState('');
+  const [bBusy, setBBusy] = useState(false);
+  const sendAll = async () => {
+    if (!bTitle.trim()) return onToast('Başlık gerekli', false);
+    setBBusy(true);
+    try { const n = await pushService.broadcast({ title: bTitle.trim(), body: bBody.trim(), scope: 'all' }); onToast(`${n} cihaza gönderildi`); setBTitle(''); setBBody(''); }
+    catch (e) { onToast(e instanceof Error ? e.message : 'Gönderilemedi', false); }
+    finally { setBBusy(false); }
+  };
+
   return (
     <>
       <div className="mb-8">
@@ -248,7 +261,7 @@ function PlatformSettingsSection({ onToast }: { onToast: (m: string, ok?: boolea
         <p className="text-gray-500 mt-1">Platform geneli yapılandırma — tüm firmalar için ortak.</p>
       </div>
 
-      <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-sm border border-black/5 max-w-xl">
+      <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-sm border border-black/5 max-w-xl mb-6">
         <h3 className="font-semibold text-lg mb-1">Google Maps API Anahtarı</h3>
         <p className="text-sm text-gray-500 mb-4">Sipariş formundaki “Haritadan Seç” özelliği için. Maps JavaScript API + Places + Geocoding etkin, referrer-kısıtlı bir tarayıcı anahtarı kullanın. Bu anahtar tüm firmalar tarafından kullanılır.</p>
         {loading ? (
@@ -261,6 +274,16 @@ function PlatformSettingsSection({ onToast }: { onToast: (m: string, ok?: boolea
             </button>
           </>
         )}
+      </div>
+
+      <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-sm border border-black/5 max-w-xl">
+        <h3 className="font-semibold text-lg mb-1">Toplu Bildirim (Tüm Platform)</h3>
+        <p className="text-sm text-gray-500 mb-4">Tüm firmalardaki bildirim aboneliği olan kullanıcılara anlık bildirim gönderir.</p>
+        <input className={inputCls} value={bTitle} onChange={(e) => setBTitle(e.target.value)} placeholder="Başlık" />
+        <textarea className={inputCls + ' mt-3'} rows={3} value={bBody} onChange={(e) => setBBody(e.target.value)} placeholder="Mesaj" />
+        <button onClick={sendAll} disabled={bBusy} className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-2xl font-semibold disabled:opacity-50 transition-colors">
+          {bBusy ? 'Gönderiliyor…' : 'Tüm Platforma Gönder'}
+        </button>
       </div>
     </>
   );
@@ -327,7 +350,7 @@ function Modal({ children, onClose, wide }: { children: React.ReactNode; onClose
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm animate-[fade_.2s_ease]" onClick={onClose} />
-      <div className={`relative bg-white rounded-3xl shadow-2xl w-full ${wide ? 'max-w-2xl' : 'max-w-md'} max-h-[90vh] overflow-y-auto animate-[pop_.25s_cubic-bezier(.2,.8,.2,1)]`}>
+      <div className={`relative bg-white rounded-3xl shadow-2xl w-full ${wide ? 'max-w-2xl' : 'max-w-md'} max-h-[90dvh] overflow-y-auto animate-[pop_.25s_cubic-bezier(.2,.8,.2,1)]`}>
         {children}
       </div>
       <style jsx global>{`

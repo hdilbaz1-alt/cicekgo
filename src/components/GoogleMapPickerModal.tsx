@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { GoogleMap, Marker, Autocomplete, useJsApiLoader } from '@react-google-maps/api';
@@ -21,7 +22,7 @@ export default function GoogleMapPickerModal({ onClose, onPick }: { onClose: () 
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(getApiUrl(getEndpoint('LOCATION_MAPS_KEY')), { headers: auth() });
+        const res = await apiFetch(getApiUrl(getEndpoint('LOCATION_MAPS_KEY')), { headers: auth() });
         const b = await res.json();
         const key = b?.data;
         setApiKey(key && String(key).trim() ? String(key).trim() : null);
@@ -32,7 +33,7 @@ export default function GoogleMapPickerModal({ onClose, onPick }: { onClose: () 
   return (
     <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-2xl max-h-[92vh] overflow-hidden flex flex-col">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-2xl max-h-[92dvh] overflow-hidden flex flex-col">
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
           <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2"><MapPin className="w-5 h-5 text-indigo-600" /> Haritadan Konum Seç</h3>
           <button onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100"><X className="w-5 h-5" /></button>
