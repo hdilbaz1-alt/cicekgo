@@ -1,8 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { emailService, type EmailSettings, type UpdateEmailSettings, type EmailTemplate, type MergeTag, type EmailTrigger } from '@/services/emailService';
+import type { GrapesHandle } from '@/components/logo/GrapesEmailEditor';
 import { useEscClose } from '@/lib/useEscClose';
+
+const GrapesEmailEditor = dynamic(() => import('@/components/logo/GrapesEmailEditor'), {
+  ssr: false,
+  loading: () => <div className="h-full grid place-items-center text-sm text-slate-400">Editör yükleniyor…</div>,
+});
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
@@ -207,91 +214,106 @@ export default function EmailNotificationsPage() {
   );
 }
 
+const DEFAULT_EMAIL_HTML = `<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f7;padding:24px 0;font-family:Arial,Helvetica,sans-serif">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden">
+      <tr><td style="background:#4f46e5;padding:20px 28px;color:#ffffff;font-size:18px;font-weight:bold">{{ company.name }}</td></tr>
+      <tr><td style="padding:28px;color:#333333;font-size:14px;line-height:1.6">
+        <h2 style="margin:0 0 12px">Merhaba {{ recipient.name }},</h2>
+        <p>Siparişiniz <b>{{ order.code }}</b> için durum: <b>{{ order.status }}</b>.</p>
+        <p>Toplam Tutar: <b>{{ order.total }}</b></p>
+      </td></tr>
+      <tr><td style="padding:16px 28px;background:#f8fafc;color:#94a3b8;font-size:12px">{{ company.name }} · Bu e-posta siparişinizle ilgili gönderilmiştir.</td></tr>
+    </table>
+  </td></tr>
+</table>`;
+
 function TemplateForm({ tpl, tags, onClose, onSaved }: { tpl: EmailTemplate | null; tags: MergeTag[]; onClose: () => void; onSaved: (m: string) => void }) {
   const isEdit = !!tpl;
   const [name, setName] = useState(tpl?.name || '');
   const [subject, setSubject] = useState(tpl?.subject || '');
-  const [body, setBody] = useState(tpl?.htmlBody || '<div style="font-family:Arial,sans-serif;font-size:14px;color:#333">\n  <h2>Merhaba {{ recipient.name }},</h2>\n  <p>{{ company.name }} siparişiniz <b>{{ order.code }}</b> durumu: <b>{{ order.status }}</b>.</p>\n  <p>Toplam: {{ order.total }}</p>\n</div>');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [preview, setPreview] = useState<{ subject: string; html: string } | null>(null);
   const subjectRef = useRef<HTMLInputElement>(null);
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
-  const active = useRef<'subject' | 'body'>('body');
+  const handleRef = useRef<GrapesHandle | null>(null);
   useEscClose(onClose);
 
-  const insert = (text: string) => {
-    if (active.current === 'subject') {
-      const el = subjectRef.current; const st = el?.selectionStart ?? subject.length; const en = el?.selectionEnd ?? subject.length;
-      const next = subject.slice(0, st) + text + subject.slice(en); setSubject(next);
-      requestAnimationFrame(() => { el?.focus(); el?.setSelectionRange(st + text.length, st + text.length); });
-    } else {
-      const el = bodyRef.current; const st = el?.selectionStart ?? body.length; const en = el?.selectionEnd ?? body.length;
-      const next = body.slice(0, st) + text + body.slice(en); setBody(next);
-      requestAnimationFrame(() => { el?.focus(); el?.setSelectionRange(st + text.length, st + text.length); });
-    }
+  const initialHtml = tpl?.htmlBody || DEFAULT_EMAIL_HTML;
+  const subjectTags = tags.filter((t) => t.code !== 'order.items');
+
+  const insertSubject = (text: string) => {
+    const el = subjectRef.current; const st = el?.selectionStart ?? subject.length; const en = el?.selectionEnd ?? subject.length;
+    const next = subject.slice(0, st) + text + subject.slice(en); setSubject(next);
+    requestAnimationFrame(() => { el?.focus(); el?.setSelectionRange(st + text.length, st + text.length); });
   };
 
-  const doPreview = async () => { const r = await emailService.preview(subject, body); setPreview(r); };
+  const doPreview = async () => {
+    const html = handleRef.current?.getHtml() || '';
+    const r = await emailService.preview(subject, html);
+    setPreview(r);
+  };
   const save = async () => {
     setErr('');
     if (!name.trim()) return setErr('Şablon adı gerekli');
     if (!subject.trim()) return setErr('Konu gerekli');
+    const html = handleRef.current?.getHtml() || '';
+    const design = handleRef.current?.getDesign() || null;
     setBusy(true);
-    const payload = { name: name.trim(), subject: subject.trim(), htmlBody: body, designJson: null, isActive: true };
+    const payload = { name: name.trim(), subject: subject.trim(), htmlBody: html, designJson: design, isActive: true };
     const r = isEdit && tpl ? await emailService.updateTemplate(tpl.id, payload) : await emailService.createTemplate(payload);
     if (r.ok) onSaved(isEdit ? 'Şablon güncellendi' : 'Şablon oluşturuldu'); else { setErr(r.message || 'Kaydedilemedi'); setBusy(false); }
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center sm:p-4">
+    <div className="fixed inset-0 z-40 flex items-stretch sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-4xl max-h-[92dvh] overflow-y-auto p-6 sm:p-7">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-xl font-bold">{isEdit ? 'Şablonu Düzenle' : 'Yeni Şablon'}</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl leading-none">×</button>
+      <div className="relative bg-white sm:rounded-3xl shadow-2xl w-full sm:max-w-6xl h-full sm:h-[94dvh] flex flex-col overflow-hidden">
+        <div className="shrink-0 flex items-center justify-between px-5 py-3 border-b border-slate-100">
+          <h3 className="text-lg font-bold">{isEdit ? 'Şablonu Düzenle' : 'Yeni Şablon'}</h3>
+          <button onClick={onClose} className="w-9 h-9 grid place-items-center rounded-xl text-slate-400 hover:bg-slate-100 text-2xl leading-none">×</button>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-5">
-          {/* Sol: düzenleyici */}
-          <div className="space-y-3">
-            <div><label className="text-xs font-medium text-slate-600">Şablon Adı</label><input className={inputCls + ' mt-1'} value={name} onChange={(e) => setName(e.target.value)} placeholder="Sipariş Hazırlanıyor Şablonu" autoFocus /></div>
-            <div><label className="text-xs font-medium text-slate-600">Konu</label><input ref={subjectRef} onFocus={() => (active.current = 'subject')} className={inputCls + ' mt-1'} value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Siparişiniz {{ order.code }} {{ order.status }}" /></div>
-            <div>
-              <label className="text-xs font-medium text-slate-600">HTML İçerik</label>
-              <textarea ref={bodyRef} onFocus={() => (active.current = 'body')} rows={12} className={inputCls + ' mt-1 font-mono text-xs'} value={body} onChange={(e) => setBody(e.target.value)} />
-            </div>
-            <div>
-              <div className="text-[11px] font-medium text-slate-500 mb-1">Değişkenler (tıkla → ekle)</div>
-              <div className="flex flex-wrap gap-1.5">
-                {tags.map((t) => (
-                  <button key={t.code} onClick={() => insert(t.insert)} className="text-[11px] font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-full">{t.label}</button>
-                ))}
-              </div>
-            </div>
-            {err && <p className="text-sm text-red-600">{err}</p>}
-          </div>
-
-          {/* Sağ: önizleme */}
+        {/* Ad + Konu */}
+        <div className="shrink-0 px-5 py-3 border-b border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div><label className="text-xs font-medium text-slate-600">Şablon Adı</label><input className={inputCls + ' mt-1'} value={name} onChange={(e) => setName(e.target.value)} placeholder="Sipariş Hazırlanıyor Şablonu" /></div>
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-medium text-slate-600">Önizleme (örnek veriyle)</span>
-              <button onClick={doPreview} className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 px-2.5 py-1 rounded-lg"><Eye className="w-3.5 h-3.5" /> Yenile</button>
+            <label className="text-xs font-medium text-slate-600">Konu</label>
+            <input ref={subjectRef} className={inputCls + ' mt-1'} value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Siparişiniz {{ order.code }} {{ order.status }}" />
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {subjectTags.map((t) => <button key={t.code} type="button" onClick={() => insertSubject(t.insert)} className="text-[10px] font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-1.5 py-0.5 rounded-full">{t.label}</button>)}
             </div>
-            <div className="rounded-2xl border border-slate-200 overflow-hidden">
-              <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 text-xs"><span className="text-slate-400">Konu:</span> <span className="font-medium text-slate-700">{preview?.subject || subject}</span></div>
-              <iframe title="preview" className="w-full h-[360px] bg-white" srcDoc={preview?.html || body} />
-            </div>
-            <p className="text-[11px] text-slate-400 mt-1">“Yenile” ile değişkenler örnek veriyle doldurulur.</p>
           </div>
         </div>
 
-        <div className="flex gap-2 pt-4 mt-1 border-t border-slate-100">
+        {/* GrapesJS editör */}
+        <div className="flex-1 min-h-0">
+          <GrapesEmailEditor initialHtml={initialHtml} initialDesign={tpl?.designJson ?? null} mergeTags={tags} onReady={(h) => (handleRef.current = h)} />
+        </div>
+
+        {err && <p className="shrink-0 px-5 py-1 text-sm text-red-600">{err}</p>}
+        <div className="shrink-0 flex items-center gap-2 px-5 py-3 border-t border-slate-100">
+          <span className="text-[11px] text-slate-400 hidden sm:inline">Soldaki bloklardan “Değişkenler” kategorisini sürükleyerek dinamik alan ekleyebilirsiniz.</span>
           <div className="flex-1" />
+          <button onClick={doPreview} className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-4 py-2.5 rounded-2xl"><Eye className="w-4 h-4" /> Önizle</button>
           <button onClick={onClose} className="px-4 py-2.5 rounded-2xl font-medium text-slate-500 hover:bg-slate-100">İptal</button>
           <button onClick={save} disabled={busy} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-2xl font-semibold disabled:opacity-50">{busy ? 'Kaydediliyor…' : 'Kaydet'}</button>
         </div>
       </div>
+
+      {/* Önizleme katmanı (örnek veriyle render) */}
+      {preview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setPreview(null)}>
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90dvh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="shrink-0 px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+              <div className="text-sm"><span className="text-slate-400">Konu:</span> <span className="font-semibold text-slate-800">{preview.subject}</span></div>
+              <button onClick={() => setPreview(null)} className="w-8 h-8 grid place-items-center rounded-xl text-slate-400 hover:bg-slate-100">×</button>
+            </div>
+            <iframe title="preview" className="w-full flex-1 min-h-[420px] bg-white" srcDoc={preview.html} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
