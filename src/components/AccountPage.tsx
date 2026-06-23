@@ -7,6 +7,7 @@ import { accountService, type AccountMe } from '@/services/accountService';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import LogoUploader from '@/components/logo/LogoUploader';
+import LogoPreview from '@/components/logo/LogoPreview';
 import { permLabel } from '@/lib/permissionMeta';
 import {
   User as UserIcon, Mail, CalendarDays, ShieldCheck, Clock, BadgeCheck, KeyRound,
@@ -192,13 +193,22 @@ export default function AccountPage({ onNavigate }: { onNavigate?: (page: string
           {/* Firma Ayarları */}
           {canManage && (
             <TabsContent value="company">
-              <Card className="p-6 max-w-[560px]">
+              <Card className="p-6">
                 <h3 className="font-semibold text-slate-900 mb-4">Firma Ayarları</h3>
                 {!coLoaded ? <p className="text-sm text-slate-400">Yükleniyor…</p> : (
-                  <div className="space-y-5">
-                    <div><label className="text-xs font-medium text-slate-600">Firma Adı</label><input className={inputCls + ' mt-1'} value={coName} onChange={(e) => setCoName(e.target.value)} placeholder="Firma adı" /></div>
-                    <LogoUploader value={coLogo} name={coName} onChange={setCoLogo} onMessage={note} />
-                    <button onClick={saveCompany} disabled={savingCo} className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-2xl text-sm font-semibold disabled:opacity-50"><Save className="w-4 h-4" />{savingCo ? 'Kaydediliyor…' : 'Kaydet'}</button>
+                  <div className="grid lg:grid-cols-2 gap-6 items-start">
+                    {/* Sol: form */}
+                    <div className="space-y-5">
+                      <div><label className="text-xs font-medium text-slate-600">Firma Adı</label><input className={inputCls + ' mt-1'} value={coName} onChange={(e) => setCoName(e.target.value)} placeholder="Firma adı" /></div>
+                      <LogoUploader value={coLogo} name={coName} onChange={setCoLogo} onMessage={note} showPreview={false} />
+                      <button onClick={saveCompany} disabled={savingCo} className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-2xl text-sm font-semibold disabled:opacity-50"><Save className="w-4 h-4" />{savingCo ? 'Kaydediliyor…' : 'Kaydet'}</button>
+                    </div>
+                    {/* Sağ: web sitesi önizleme (canlı, açık tema) */}
+                    <div className="lg:sticky lg:top-4">
+                      <span className="text-xs font-medium text-slate-600">Web Sitesi Önizleme</span>
+                      <div className="mt-1.5"><LogoPreview src={coLogo} name={coName} /></div>
+                      <p className="text-[11px] text-slate-400 mt-1.5">Logonuzun üst barda nasıl görüneceğinin canlı örneği.</p>
+                    </div>
                   </div>
                 )}
               </Card>

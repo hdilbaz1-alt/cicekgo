@@ -1,36 +1,49 @@
 'use client';
-import { ImageOff } from 'lucide-react';
+import { Search, Bell } from 'lucide-react';
 
-/** Logonun topbar'da nasıl görüneceğinin gerçek zamanlı önizlemesi (h-[37px], object-contain). */
+/** Logonun web sitesinde (üst barda) nasıl görüneceğinin canlı örneği — yalnız açık tema. */
 export default function LogoPreview({ src, name }: { src?: string | null; name?: string }) {
   return (
-    <div>
-      <span className="text-xs font-medium text-slate-600">Topbar Önizleme</span>
-      <div className="mt-1.5 rounded-2xl border border-slate-200 overflow-hidden">
-        {/* Topbar'ı taklit eden açık zemin bar */}
-        <div className="h-14 px-4 bg-white/90 border-b border-slate-100 flex items-center gap-2.5">
-          {src ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={src} alt="" className="h-[37px] w-auto max-w-[150px] object-contain" />
-          ) : (
-            <span className="font-bold text-slate-900 truncate">{name || 'ÇiçekGo'}</span>
-          )}
-          <div className="ml-auto flex items-center gap-2 opacity-40">
-            <div className="w-8 h-8 rounded-xl bg-slate-100" />
-            <div className="w-8 h-8 rounded-full bg-slate-200" />
-          </div>
-        </div>
-        {/* Şeffaflık kontrolü için koyu zemin şerit */}
-        <div className="h-10 px-4 bg-slate-800 flex items-center">
-          {src ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={src} alt="" className="h-7 w-auto max-w-[120px] object-contain" />
-          ) : (
-            <span className="text-slate-500 text-xs inline-flex items-center gap-1"><ImageOff className="w-3.5 h-3.5" /> Logo yok</span>
-          )}
+    <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-sm bg-white">
+      {/* Tarayıcı çubuğu */}
+      <div className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 border-b border-slate-200">
+        <span className="w-2.5 h-2.5 rounded-full bg-rose-300" />
+        <span className="w-2.5 h-2.5 rounded-full bg-amber-300" />
+        <span className="w-2.5 h-2.5 rounded-full bg-emerald-300" />
+        <div className="ml-2 flex-1 h-5 rounded-md bg-white border border-slate-200 flex items-center px-2">
+          <span className="text-[10px] text-slate-400 truncate">cicekgo.app</span>
         </div>
       </div>
-      <p className="text-[11px] text-slate-400 mt-1">Açık ve koyu zeminde nasıl durduğunu kontrol edin.</p>
+
+      {/* Site üst barı — logo burada görünür */}
+      <div className="h-14 px-4 bg-white border-b border-slate-100 flex items-center gap-2.5">
+        {src ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={src} alt="" className="h-[37px] w-auto max-w-[150px] object-contain" />
+        ) : (
+          <span className="font-bold text-slate-900 truncate">{name || 'ÇiçekGo'}</span>
+        )}
+        <div className="ml-auto flex items-center gap-2 text-slate-300">
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100"><Search className="w-3.5 h-3.5" /><span className="w-12 h-2 rounded bg-slate-200" /></div>
+          <div className="w-8 h-8 rounded-lg bg-slate-100 grid place-items-center"><Bell className="w-4 h-4" /></div>
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600" />
+        </div>
+      </div>
+
+      {/* Sayfa gövdesi iskeleti (açık tema) */}
+      <div className="flex">
+        <div className="hidden sm:flex flex-col gap-2 w-28 p-3 border-r border-slate-100">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className={`h-6 rounded-lg ${i === 0 ? 'bg-indigo-50' : 'bg-slate-50'}`} />
+          ))}
+        </div>
+        <div className="flex-1 p-4 bg-slate-50/60 space-y-3">
+          <div className="grid grid-cols-3 gap-2">
+            {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-12 rounded-xl bg-white border border-slate-100" />)}
+          </div>
+          <div className="h-24 rounded-xl bg-white border border-slate-100" />
+        </div>
+      </div>
     </div>
   );
 }

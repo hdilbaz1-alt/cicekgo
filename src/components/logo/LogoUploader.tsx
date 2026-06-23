@@ -7,11 +7,12 @@ import LogoPreview from './LogoPreview';
 import BackgroundRemovalAction from './BackgroundRemovalAction';
 
 /** Logo yükleme + kırpma + önizleme + arka plan kaldırma — tek reusable bileşen. */
-export default function LogoUploader({ value, name, onChange, onMessage }: {
+export default function LogoUploader({ value, name, onChange, onMessage, showPreview = true }: {
   value: string | null;
   name?: string;
   onChange: (dataUrl: string | null) => void;
   onMessage: (msg: string) => void;
+  showPreview?: boolean;
 }) {
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -61,8 +62,8 @@ export default function LogoUploader({ value, name, onChange, onMessage }: {
         </div>
       </div>
 
-      {/* Topbar önizleme */}
-      <div className="mt-4"><LogoPreview src={value} name={name} /></div>
+      {/* Topbar önizleme (opsiyonel — dışarıda da gösterilebilir) */}
+      {showPreview && <div className="mt-4"><LogoPreview src={value} name={name} /></div>}
 
       {cropSrc && <LogoCropper src={cropSrc} onCancel={() => setCropSrc(null)} onDone={(d) => { onChange(d); setCropSrc(null); onMessage('Logo güncellendi (kaydetmeyi unutmayın)'); }} />}
     </div>
