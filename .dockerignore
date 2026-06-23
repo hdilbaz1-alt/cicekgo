@@ -1,0 +1,10 @@
+node_modules
+out
+.next
+.git
+backend
+_deploy
+dp-keys
+*.log
+.vscode
+.idea

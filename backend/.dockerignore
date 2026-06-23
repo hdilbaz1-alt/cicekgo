@@ -1,0 +1,9 @@
+**/bin
+**/obj
+**/.vs
+**/.vscode
+publish
+appsettings.Development.json
+dp-keys
+*.user
+.git

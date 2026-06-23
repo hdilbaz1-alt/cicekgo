@@ -2,10 +2,11 @@
 
 // Manuel seçim: Aşağıdaki sabitlerden birini BASE_URL olarak atayın
 const LOCAL_BASE_URL = 'http://localhost:5080';
-const PROD_BASE_URL = 'https://api-cicekgo-backend.hanyapp.com';
+// Yeni sunucu (Docker/Cloudflare). Build anında NEXT_PUBLIC_API_BASE_URL ile override edilebilir (statik export'a gömülür).
+const PROD_BASE_URL = 'https://customer-backend.cicekgo.net';
 
 export const API_CONFIG = {
-  BASE_URL: PROD_BASE_URL, // Canlı backend (.NET + PostgreSQL)
+  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || PROD_BASE_URL, // Canlı backend (.NET + PostgreSQL)
   ENDPOINTS: {
     LOGIN: '/api/Auth/login',
     ORDERS: '/api/Orders',

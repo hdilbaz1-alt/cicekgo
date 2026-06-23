@@ -118,6 +118,7 @@ cicekgomobileapp/
 # Deploy / build artifacts
 _deploy/
 **/publish/
+dp-keys/
 
 # Gizli yapılandırma (GERÇEK kimlik bilgileri) — örnek (.example) dosyalar commit'lenir
 cicekgo.API/cicekgo.API/appsettings.json

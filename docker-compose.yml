@@ -1,0 +1,42 @@
+# ÇiçekGo uygulama yığını. Postgres HOST'ta (host.docker.internal). Sırlar .env'de (git dışı).
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: cicekgo-backend:latest
+    container_name: cicekgo-backend
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_URLS: "http://0.0.0.0:5080"
+      ASPNETCORE_ENVIRONMENT: "Production"
+      Database__MasterConnection: "${DB_MASTER_CONNECTION}"
+      Database__TenantConnectionTemplate: "${DB_TENANT_TEMPLATE}"
+      Database__TenantDbPrefix: "${DB_TENANT_PREFIX}"
+      Jwt__Key: "${JWT_KEY}"
+      Jwt__Issuer: "${JWT_ISSUER:-cicekgo}"
+      Jwt__Audience: "${JWT_AUDIENCE:-cicekgo}"
+      Jwt__ExpiresMinutes: "${JWT_EXPIRES_MIN:-480}"
+      Seed__PlatformAdminUsername: "${SEED_ADMIN_USER}"
+      Seed__PlatformAdminPassword: "${SEED_ADMIN_PASS}"
+      Seed__PlatformAdminEmail: "${SEED_ADMIN_EMAIL}"
+      Cors__AllowedOrigins__0: "${CORS_ORIGIN}"
+      DataProtection__KeysPath: "/keys"
+    volumes:
+      - ./dp-keys:/keys
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:5080:5080"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: "${NEXT_PUBLIC_API_BASE_URL}"
+    image: cicekgo-frontend:latest
+    container_name: cicekgo-frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"
