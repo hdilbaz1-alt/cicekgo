@@ -65,6 +65,12 @@ export interface CreateUserRequest {
   roleIds: number[];
 }
 
+export interface CreateRoleRequest {
+  name: string;
+  description?: string | null;
+  permissions: string[];
+}
+
 export interface UpdateUserRequest {
   fullName?: string | null;
   email?: string | null;
@@ -168,6 +174,11 @@ export const adminService = {
   },
   async listMyRoles(): Promise<RoleDto[]> {
     return handle<RoleDto[]>(await apiFetch(getApiUrl(getEndpoint('ADMIN_ROLES')), { headers: authHeaders() }));
+  },
+  async createMyRole(req: CreateRoleRequest): Promise<RoleDto> {
+    return handle<RoleDto>(await apiFetch(getApiUrl(getEndpoint('ADMIN_ROLES')), {
+      method: 'POST', headers: authHeaders(), body: JSON.stringify(req),
+    }));
   },
   async listCouriers(): Promise<UserDto[]> {
     return handle<UserDto[]>(await apiFetch(`${getApiUrl('/api/Admin/couriers')}`, { headers: authHeaders() }));

@@ -6,9 +6,11 @@ import { getApiUrl, getEndpoint } from '@/config/api';
 import { accountService, type AccountMe } from '@/services/accountService';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import LogoUploader from '@/components/logo/LogoUploader';
+import { permLabel } from '@/lib/permissionMeta';
 import {
   User as UserIcon, Mail, CalendarDays, ShieldCheck, Clock, BadgeCheck, KeyRound,
-  Building2, Pencil, Save, X, Image as ImageIcon, type LucideIcon,
+  Building2, Pencil, Save, X, type LucideIcon,
 } from 'lucide-react';
 
 const inputCls = 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-sm';
@@ -61,27 +63,25 @@ export default function AccountPage({ onNavigate }: { onNavigate?: (page: string
   // Firma ayarları
   const canManage = can(P.settingsManage);
   const [coName, setCoName] = useState(''); const [coLogo, setCoLogo] = useState<string | null>(null);
-  const [coRemoveBg, setCoRemoveBg] = useState(false); const [coLoaded, setCoLoaded] = useState(false); const [savingCo, setSavingCo] = useState(false);
+  const [coLoaded, setCoLoaded] = useState(false); const [savingCo, setSavingCo] = useState(false);
   const loadCompany = async () => {
     try {
       const res = await apiFetch(getApiUrl(getEndpoint('COMPANY_PROFILE')));
       const b = await res.json();
-      if (b?.success) { setCoName(b.data.name || ''); setCoLogo(b.data.logoBase64 || null); setCoRemoveBg(!!b.data.logoRemoveBg); }
+      if (b?.success) { setCoName(b.data.name || ''); setCoLogo(b.data.logoBase64 || null); }
     } catch { /* yoksay */ } finally { setCoLoaded(true); }
   };
   useEffect(() => { if (canManage) loadCompany(); }, [canManage]);
-  const onLogoPick = (file?: File) => {
-    if (!file) return;
-    if (file.size > 2 * 1024 * 1024) return note('Logo en fazla 2MB olmalı');
-    const r = new FileReader(); r.onload = () => setCoLogo(r.result as string); r.readAsDataURL(file);
-  };
   const saveCompany = async () => {
     setSavingCo(true);
     try {
-      const res = await apiFetch(getApiUrl(getEndpoint('COMPANY_PROFILE')), { method: 'PUT', body: JSON.stringify({ name: coName, logoBase64: coLogo ?? '', logoRemoveBg: coRemoveBg }) });
+      // Yeni akışta şeffaflık doğrudan PNG'ye işleniyor → logoRemoveBg=false
+      const res = await apiFetch(getApiUrl(getEndpoint('COMPANY_PROFILE')), { method: 'PUT', body: JSON.stringify({ name: coName, logoBase64: coLogo ?? '', logoRemoveBg: false }) });
       const b = await res.json();
       if (res.ok && b?.success) {
         try { const ti = JSON.parse(localStorage.getItem('tenantInfo') || '{}'); ti.name = b.data.name; ti.logoBase64 = b.data.logoBase64; ti.logoRemoveBg = b.data.logoRemoveBg; localStorage.setItem('tenantInfo', JSON.stringify(ti)); } catch { /* yoksay */ }
+        // Topbar'ı (Header) anında güncelle
+        if (typeof window !== 'undefined') window.dispatchEvent(new Event('tenantinfo:update'));
         note('Firma bilgileri kaydedildi');
       } else note(b?.message || 'Kaydedilemedi');
     } catch { note('Bağlantı hatası'); } finally { setSavingCo(false); }
@@ -166,7 +166,9 @@ export default function AccountPage({ onNavigate }: { onNavigate?: (page: string
               {me?.permissions?.length ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                   {me.permissions.map((p) => (
-                    <span key={p} className="text-xs font-mono text-slate-600 bg-slate-50 border border-slate-100 px-2.5 py-1.5 rounded-lg truncate">{p}</span>
+                    <span key={p} title={p} className="inline-flex items-center gap-1.5 text-sm text-slate-700 bg-slate-50 border border-slate-100 px-2.5 py-1.5 rounded-lg">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> <span className="truncate">{permLabel(p)}</span>
+                    </span>
                   ))}
                 </div>
               ) : <p className="text-sm text-slate-400">İzin bilgisi yok.</p>}
@@ -192,24 +194,9 @@ export default function AccountPage({ onNavigate }: { onNavigate?: (page: string
               <Card className="p-6 max-w-[560px]">
                 <h3 className="font-semibold text-slate-900 mb-4">Firma Ayarları</h3>
                 {!coLoaded ? <p className="text-sm text-slate-400">Yükleniyor…</p> : (
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     <div><label className="text-xs font-medium text-slate-600">Firma Adı</label><input className={inputCls + ' mt-1'} value={coName} onChange={(e) => setCoName(e.target.value)} placeholder="Firma adı" /></div>
-                    <div>
-                      <label className="text-xs font-medium text-slate-600">Logo</label>
-                      <div className="mt-1 flex items-center gap-3">
-                        <div className="w-16 h-16 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
-                          {coLogo ? <img src={coLogo} alt="" className="max-w-full max-h-full object-contain" style={coRemoveBg ? { mixBlendMode: 'multiply' } : undefined} /> : <ImageIcon className="w-6 h-6 text-slate-300" />}
-                        </div>
-                        <div className="flex flex-col gap-1.5">
-                          <label className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-xl cursor-pointer w-fit">
-                            <ImageIcon className="w-4 h-4" /> Logo Seç
-                            <input type="file" accept="image/*" className="hidden" onChange={(e) => onLogoPick(e.target.files?.[0])} />
-                          </label>
-                          {coLogo && <button onClick={() => setCoLogo(null)} className="text-xs text-rose-500 hover:underline w-fit">Logoyu kaldır</button>}
-                        </div>
-                      </div>
-                    </div>
-                    <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer"><input type="checkbox" checked={coRemoveBg} onChange={(e) => setCoRemoveBg(e.target.checked)} className="w-4 h-4 rounded accent-indigo-600" /> Logo beyaz zeminini temizle</label>
+                    <LogoUploader value={coLogo} name={coName} onChange={setCoLogo} onMessage={note} />
                     <button onClick={saveCompany} disabled={savingCo} className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-2xl text-sm font-semibold disabled:opacity-50"><Save className="w-4 h-4" />{savingCo ? 'Kaydediliyor…' : 'Kaydet'}</button>
                   </div>
                 )}

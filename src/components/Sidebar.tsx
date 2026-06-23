@@ -58,6 +58,7 @@ const ITEMS: Item[] = [
 export default function Sidebar({ isCollapsed, onToggle, onPageChange, currentPage, user, onLogout }: SidebarProps) {
   const [showSub, setShowSub] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);   // alt hesap menüsü açık mı
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -80,7 +81,7 @@ export default function Sidebar({ isCollapsed, onToggle, onPageChange, currentPa
   return (
     <div
       onMouseEnter={() => isCollapsed && setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseLeave={() => { if (!accountMenuOpen) setHovered(false); }}   // hesap menüsü açıkken daraltma
       className={`bg-white border-r border-slate-200 text-slate-700 flex flex-col h-full overflow-hidden transition-[width] duration-300 shadow-sm w-64 ${expanded ? 'lg:w-64' : 'lg:w-[84px]'}`}
     >
       {/* Brand: sadece firma logosu */}
@@ -140,7 +141,7 @@ export default function Sidebar({ isCollapsed, onToggle, onPageChange, currentPa
 
       {/* Alt hesap menüsü (sol alt) — Hesap · Bildirimler · Çıkış */}
       <div className="border-t border-slate-100 p-2.5">
-        <DropdownMenu>
+        <DropdownMenu open={accountMenuOpen} onOpenChange={(o) => { setAccountMenuOpen(o); if (!o) setHovered(false); }}>
           <DropdownMenuTrigger asChild>
             <button
               title={!expanded ? userName : undefined}

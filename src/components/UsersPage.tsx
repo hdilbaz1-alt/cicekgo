@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { adminService, UserDto, RoleDto } from '@/services/adminService';
 import { can, P } from '@/lib/permissions';
+import { groupPermissions, permLabel, PERMISSION_META } from '@/lib/permissionMeta';
 import { useEscClose } from '@/lib/useEscClose';
 import { SkeletonCards, EmptyState } from './ui/Skeleton';
-import { Plus, Users, CheckCircle2, ShieldCheck, UserCog, Pencil, type LucideIcon } from 'lucide-react';
+import { Plus, Users, CheckCircle2, ShieldCheck, UserCog, Pencil, Lock, type LucideIcon } from 'lucide-react';
 
 const AVATAR_TONES = [
   'bg-indigo-50 text-indigo-600', 'bg-emerald-50 text-emerald-600', 'bg-amber-50 text-amber-600',
@@ -20,6 +21,8 @@ export default function UsersPage() {
   const [error, setError] = useState('');
   const [adding, setAdding] = useState(false);
   const [editUser, setEditUser] = useState<UserDto | null>(null);
+  const [view, setView] = useState<'users' | 'roles'>('users');
+  const [roleAdding, setRoleAdding] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(null), 3000); };
 
@@ -43,17 +46,29 @@ export default function UsersPage() {
   return (
     <div className="min-h-full bg-gradient-to-b from-slate-50 to-white">
       <div className="w-full px-5 sm:px-8 lg:px-10 py-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-7">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Kullanıcılar</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Kullanıcılar &amp; Roller</h1>
           </div>
           {canManage && (
-            <button onClick={() => setAdding(true)}
-              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-2xl font-semibold shadow-lg shadow-blue-600/25 active:scale-95 transition-all">
-              <Plus className="w-5 h-5" strokeWidth={2.4} />
-              Kullanıcı Ekle
-            </button>
+            view === 'users' ? (
+              <button onClick={() => setAdding(true)}
+                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-2xl font-semibold shadow-lg shadow-blue-600/25 active:scale-95 transition-all">
+                <Plus className="w-5 h-5" strokeWidth={2.4} /> Kullanıcı Ekle
+              </button>
+            ) : (
+              <button onClick={() => setRoleAdding(true)}
+                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-2xl font-semibold shadow-lg shadow-blue-600/25 active:scale-95 transition-all">
+                <Plus className="w-5 h-5" strokeWidth={2.4} /> Yeni Rol
+              </button>
+            )
           )}
+        </div>
+
+        {/* Görünüm: Kullanıcılar / Roller */}
+        <div className="inline-flex p-1 bg-slate-100 rounded-2xl mb-6">
+          <button onClick={() => setView('users')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${view === 'users' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Kullanıcılar</button>
+          <button onClick={() => setView('roles')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${view === 'roles' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Roller</button>
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-7 max-w-2xl">
@@ -64,7 +79,37 @@ export default function UsersPage() {
 
         {error && <div className="mb-5 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 text-sm">{error}</div>}
 
-        {loading ? (
+        {/* ROLLER görünümü */}
+        {view === 'roles' && (
+          loading ? <SkeletonCards count={4} /> : roles.length === 0 ? (
+            <EmptyState icon={<ShieldCheck className="w-7 h-7" />} title="Rol yok" hint={canManage ? 'Yeni bir rol oluşturarak başla.' : undefined}
+              action={canManage ? <button onClick={() => setRoleAdding(true)} className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-2xl font-semibold"><Plus className="w-4 h-4" /> Yeni Rol</button> : undefined} />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {roles.map((r) => (
+                <div key={r.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5">
+                  <div className="flex items-center gap-2.5 mb-1">
+                    <span className="w-10 h-10 rounded-2xl bg-violet-50 text-violet-600 grid place-items-center shrink-0">{r.isSystem ? <Lock className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}</span>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-slate-900 truncate">{r.name}</h3>
+                      <div className="text-xs text-slate-400">{r.isSystem ? 'Sistem rolü' : 'Özel rol'} · {r.permissions.length} izin</div>
+                    </div>
+                  </div>
+                  {r.description && <p className="text-xs text-slate-500 mt-1">{r.description}</p>}
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {r.permissions.slice(0, 6).map((p) => (
+                      <span key={p} className="text-[11px] font-medium text-slate-600 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-full">{permLabel(p)}</span>
+                    ))}
+                    {r.permissions.length > 6 && <span className="text-[11px] text-slate-400">+{r.permissions.length - 6} izin</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
+        {/* KULLANICILAR görünümü */}
+        {view === 'users' && (loading ? (
           <SkeletonCards count={6} />
         ) : users.length === 0 ? (
           <EmptyState icon={<UserCog className="w-7 h-7" />} title="Kullanıcı yok" hint={canManage ? 'İlk kullanıcıyı ekleyerek başla.' : undefined}
@@ -98,13 +143,16 @@ export default function UsersPage() {
               </div>
             ))}
           </div>
-        )}
+        ))}
       </div>
 
       {(adding || editUser) && (
         <UserForm roles={roles} user={editUser}
           onClose={() => { setAdding(false); setEditUser(null); }}
           onSaved={(m) => { setAdding(false); setEditUser(null); showToast(m); load(); }} />
+      )}
+      {roleAdding && (
+        <RoleForm onClose={() => setRoleAdding(false)} onSaved={(m) => { setRoleAdding(false); showToast(m); load(); }} />
       )}
       {toast && <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl shadow-2xl bg-slate-900 text-white text-sm font-medium">{toast}</div>}
     </div>
@@ -214,6 +262,87 @@ function UserForm({ roles, user, onClose, onSaved }: {
             <div className="flex-1" />
             <button onClick={onClose} className="px-4 py-2.5 rounded-2xl font-medium text-slate-500 hover:bg-slate-100">İptal</button>
             <button onClick={save} disabled={busy} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-2xl font-semibold disabled:opacity-50">{busy ? 'Kaydediliyor…' : 'Kaydet'}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const ALLOWED_PERM_CODES = PERMISSION_META.map((m) => m.code).filter((c) => c !== 'tenants.manage');
+
+function RoleForm({ onClose, onSaved }: { onClose: () => void; onSaved: (m: string) => void }) {
+  const [name, setName] = useState('');
+  const [desc, setDesc] = useState('');
+  const [perms, setPerms] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  useEscClose(onClose);
+  const groups = useMemo(() => groupPermissions(ALLOWED_PERM_CODES), []);
+
+  const toggle = (c: string) => setPerms((p) => (p.includes(c) ? p.filter((x) => x !== c) : [...p, c]));
+  const toggleGroup = (codes: string[]) => {
+    const allOn = codes.every((c) => perms.includes(c));
+    setPerms((p) => (allOn ? p.filter((c) => !codes.includes(c)) : Array.from(new Set([...p, ...codes]))));
+  };
+
+  const save = async () => {
+    setErr('');
+    if (!name.trim()) return setErr('Rol adı gerekli');
+    if (perms.length === 0) return setErr('En az bir izin seçin');
+    setBusy(true);
+    try { await adminService.createMyRole({ name: name.trim(), description: desc.trim() || null, permissions: perms }); onSaved('Rol oluşturuldu'); }
+    catch (e) { setErr(e instanceof Error ? e.message : 'Oluşturulamadı'); setBusy(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center sm:p-4">
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto p-6 sm:p-7">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-xl font-bold">Yeni Rol</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl leading-none">×</button>
+        </div>
+        <div className="space-y-4">
+          <div><label className="text-sm font-medium text-slate-700">Rol Adı</label><input className={inputCls + ' mt-1.5'} value={name} onChange={(e) => setName(e.target.value)} placeholder="Örn. Mağaza Sorumlusu" autoFocus /></div>
+          <div><label className="text-sm font-medium text-slate-700">Açıklama (opsiyonel)</label><input className={inputCls + ' mt-1.5'} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Bu rolün amacı" /></div>
+
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-slate-700">Özel İzinler</span>
+              <span className="text-xs text-slate-400">{perms.length} seçili</span>
+            </div>
+            <div className="mt-2 space-y-3">
+              {groups.map((g) => {
+                const codes = g.items.map((i) => i.code);
+                const allOn = codes.every((c) => perms.includes(c));
+                const someOn = codes.some((c) => perms.includes(c));
+                return (
+                  <div key={g.group} className="border border-slate-200 rounded-2xl p-3">
+                    <label className="flex items-center gap-2 cursor-pointer mb-2">
+                      <input type="checkbox" checked={allOn} ref={(el) => { if (el) el.indeterminate = !allOn && someOn; }} onChange={() => toggleGroup(codes)} className="w-4 h-4 rounded accent-indigo-600" />
+                      <span className="text-sm font-semibold text-slate-700">{g.group}</span>
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pl-1">
+                      {g.items.map((it) => (
+                        <label key={it.code} className="flex items-center gap-2 cursor-pointer text-sm text-slate-600 rounded-lg px-2 py-1 hover:bg-slate-50">
+                          <input type="checkbox" checked={perms.includes(it.code)} onChange={() => toggle(it.code)} className="w-4 h-4 rounded accent-indigo-600 shrink-0" />
+                          <span className="truncate">{it.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {err && <p className="text-sm text-red-600">{err}</p>}
+
+          <div className="flex gap-2 pt-1">
+            <div className="flex-1" />
+            <button onClick={onClose} className="px-4 py-2.5 rounded-2xl font-medium text-slate-500 hover:bg-slate-100">İptal</button>
+            <button onClick={save} disabled={busy} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-2xl font-semibold disabled:opacity-50">{busy ? 'Oluşturuluyor…' : 'Rol Oluştur'}</button>
           </div>
         </div>
       </div>

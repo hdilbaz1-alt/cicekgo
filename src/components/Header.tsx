@@ -15,9 +15,15 @@ export default function Header({ onMenuClick, onSearchClick, onNavigate, title }
   const [tenant, setTenant] = useState<{ name?: string; logoBase64?: string | null; logoRemoveBg?: boolean } | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem('tenantInfo');
-    if (!stored) return;
-    try { setTenant(JSON.parse(stored)); } catch { /* yoksay */ }
+    const read = () => {
+      const stored = localStorage.getItem('tenantInfo');
+      if (!stored) return;
+      try { setTenant(JSON.parse(stored)); } catch { /* yoksay */ }
+    };
+    read();
+    // Firma logosu/adı kaydedilince topbar'ı anında güncelle
+    window.addEventListener('tenantinfo:update', read);
+    return () => window.removeEventListener('tenantinfo:update', read);
   }, []);
 
   return (
