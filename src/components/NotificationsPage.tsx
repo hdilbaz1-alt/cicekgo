@@ -3,11 +3,35 @@
 import { useEffect, useState } from 'react';
 import { can, P } from '@/lib/permissions';
 import { pushService } from '@/services/pushService';
-import { Bell, BellOff, Share } from 'lucide-react';
+import { notificationService, type NotificationItem } from '@/services/notificationService';
+import { Bell, BellOff, Share, CheckCheck } from 'lucide-react';
 
 const inputCls = 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-sm';
 
-export default function NotificationsPage() {
+function timeAgo(iso: string): string {
+  const d = new Date(iso).getTime();
+  if (isNaN(d)) return '';
+  const s = Math.max(0, (Date.now() - d) / 1000);
+  if (s < 60) return 'az önce';
+  if (s < 3600) return `${Math.floor(s / 60)} dk önce`;
+  if (s < 86400) return `${Math.floor(s / 3600)} sa önce`;
+  if (s < 604800) return `${Math.floor(s / 86400)} gün önce`;
+  return new Date(iso).toLocaleDateString('tr-TR');
+}
+
+export default function NotificationsPage({ onNavigate }: { onNavigate?: (page: string, opts?: Record<string, unknown>) => void }) {
+  const [feed, setFeed] = useState<NotificationItem[]>([]);
+  const loadFeed = () => notificationService.list(50).then(setFeed);
+  useEffect(() => { loadFeed(); }, []);
+  const feedUnread = feed.filter((n) => !n.isRead).length;
+  const onFeedClick = async (n: NotificationItem) => {
+    if (!n.isRead) { await notificationService.markRead(n.id); setFeed((p) => p.map((x) => (x.id === n.id ? { ...x, isRead: true } : x))); }
+    if (n.url && onNavigate) {
+      try { const u = new URL(n.url, window.location.origin); if (u.searchParams.get('go') === 'order' && u.searchParams.get('code')) { onNavigate('orders', { openOrderCode: u.searchParams.get('code')! }); return; } } catch { /* yoksay */ }
+    }
+  };
+  const feedMarkAll = async () => { await notificationService.markAllRead(); setFeed((p) => p.map((x) => ({ ...x, isRead: true }))); };
+
   const [perm, setPerm] = useState<NotificationPermission>('default');
   const [supported, setSupported] = useState(false);
   const [iosInstall, setIosInstall] = useState(false);
@@ -48,7 +72,36 @@ export default function NotificationsPage() {
     <div className="min-h-full bg-gradient-to-b from-slate-50 to-white">
       <div className="w-full px-5 sm:px-8 lg:px-10 py-8 max-w-[800px]">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900 mb-1">Bildirimler</h1>
-        <p className="text-slate-500 text-sm mb-6">Cihazına anlık bildirim al; yeni sipariş/kurye bildirimleri buradan etkinleşir.</p>
+        <p className="text-slate-500 text-sm mb-6">Gelen bildirimlerin ve cihaz bildirim ayarların.</p>
+
+        {/* Gelen bildirimler (kalıcı liste) */}
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm mb-6 overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+            <h3 className="font-semibold text-slate-800">Gelen Bildirimler{feedUnread > 0 ? ` (${feedUnread})` : ''}</h3>
+            {feedUnread > 0 && (
+              <button onClick={feedMarkAll} className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:underline"><CheckCheck className="w-3.5 h-3.5" /> Tümünü okundu işaretle</button>
+            )}
+          </div>
+          {feed.length === 0 ? (
+            <div className="p-10 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-300 mx-auto mb-3 flex items-center justify-center"><Bell className="w-7 h-7" /></div>
+              <p className="text-sm text-slate-400">Henüz bildirim yok</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-50 max-h-[55vh] overflow-y-auto">
+              {feed.map((n) => (
+                <button key={n.id} onClick={() => onFeedClick(n)} className={`w-full text-left px-6 py-3.5 flex gap-3 transition-colors hover:bg-slate-50 ${n.isRead ? '' : 'bg-indigo-50/50'}`}>
+                  <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${n.isRead ? 'bg-transparent' : 'bg-indigo-500'}`} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-medium text-slate-800">{n.title}</span>
+                    <span className="block text-[13px] text-slate-500">{n.body}</span>
+                    <span className="block text-[11px] text-slate-400 mt-0.5">{timeAgo(n.createdAtUtc)}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Bildirim aç/kapat */}
         <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 mb-6">

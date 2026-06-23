@@ -7,6 +7,10 @@ public class AccountMeDto
     public string? FullName { get; set; }
     public string? Email { get; set; }
     public string? TenantName { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+    public DateTime? LastLoginAtUtc { get; set; }
+    public DateTime? LkStart { get; set; }
+    public DateTime? LkEnd { get; set; }
     public List<string> Roles { get; set; } = new();
     public List<string> Permissions { get; set; } = new();
 }

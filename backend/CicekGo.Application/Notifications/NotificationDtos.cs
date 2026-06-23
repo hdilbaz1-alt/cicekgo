@@ -29,6 +29,28 @@ public class BroadcastDto
     public int? TenantId { get; set; }               // süperadmin belirli firmaya gönderirse
 }
 
+/// <summary>Zil listesinde gösterilen kalıcı bildirim.</summary>
+public class NotificationItemDto
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = default!;
+    public string Body { get; set; } = default!;
+    public string? Url { get; set; }
+    public string? Type { get; set; }
+    public bool IsRead { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+}
+
+/// <summary>Kullanıcı bildirim akışı (kalıcı liste + okundu yönetimi).</summary>
+public interface INotificationFeedService
+{
+    Task AddAsync(int userId, int? tenantId, string title, string body, string? url, string? type, CancellationToken ct = default);
+    Task<List<NotificationItemDto>> ListAsync(int userId, int take = 50, CancellationToken ct = default);
+    Task<int> UnreadCountAsync(int userId, CancellationToken ct = default);
+    Task MarkReadAsync(int userId, int id, CancellationToken ct = default);
+    Task MarkAllReadAsync(int userId, CancellationToken ct = default);
+}
+
 public interface IPushSubscriptionService
 {
     Task SaveAsync(int userId, int? tenantId, PushSubscribeDto dto, CancellationToken ct = default);

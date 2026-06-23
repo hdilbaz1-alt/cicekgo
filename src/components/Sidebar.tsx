@@ -5,15 +5,23 @@ import { canAny, P } from '@/lib/permissions';
 import {
   LayoutDashboard, ClipboardList, Truck, Users, UsersRound, BookText, Wallet,
   BarChart3, Package, UserCog, Trash2, ScrollText, Settings, ChevronRight,
-  ChevronsLeft, Tag, Ruler, Clock, ListChecks, Printer, RotateCcw, MapPin, Bell, type LucideIcon,
+  ChevronsLeft, Tag, Ruler, Clock, ListChecks, Printer, RotateCcw, MapPin, Bell,
+  ChevronsUpDown, User as UserIcon, LogOut, type LucideIcon,
 } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
 
+interface SidebarUser { userName?: string; roles?: { id: number; name: string }[] }
 interface SidebarProps {
   isCollapsed: boolean;
   onToggle: () => void;
   onPageChange: (page: string) => void;
   currentPage: string;
   onCreateOrder?: () => void;
+  user?: SidebarUser | null;
+  onLogout?: () => void;
 }
 
 interface SubItem { id: string; label: string; icon: LucideIcon }
@@ -21,7 +29,6 @@ interface Item { id: string; label: string; icon: LucideIcon; perm?: string[]; g
 
 const ITEMS: Item[] = [
   { id: 'dashboard', label: 'Anasayfa', icon: LayoutDashboard, group: 'Genel' },
-  { id: 'notifications', label: 'Bildirimler', icon: Bell, group: 'Genel' },
   { id: 'orders', label: 'Siparişler', icon: ClipboardList, perm: [P.ordersView], group: 'Operasyon' },
   { id: 'my-deliveries', label: 'Teslimatlarım', icon: Truck, perm: [P.ordersViewOwn], group: 'Operasyon' },
   { id: 'customers', label: 'Müşteriler', icon: Users, perm: [P.customersView], group: 'Operasyon' },
@@ -48,11 +55,18 @@ const ITEMS: Item[] = [
   },
 ];
 
-export default function Sidebar({ isCollapsed, onToggle, onPageChange, currentPage }: SidebarProps) {
+export default function Sidebar({ isCollapsed, onToggle, onPageChange, currentPage, user, onLogout }: SidebarProps) {
   const [showSub, setShowSub] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  const userName = user?.userName || 'Kullanıcı';
+  const roleName = user?.roles?.[0]?.name || '';
+  const initials = (() => {
+    const p = (user?.userName || '').split(/[.\s]/).filter(Boolean);
+    return ((p[0]?.[0] || '') + (p[1]?.[0] || '')).toUpperCase() || (userName[0] || 'K').toUpperCase();
+  })();
 
   // Masaüstünde kapalıyken üzerine gelince geçici aç
   const expanded = !isCollapsed || hovered;
@@ -124,7 +138,43 @@ export default function Sidebar({ isCollapsed, onToggle, onPageChange, currentPa
         })}
       </nav>
 
-      <div className={`px-4 py-3 border-t border-slate-100 text-[11px] text-slate-400 ${hideOnCollapse}`}>ÇiçekGo · v1</div>
+      {/* Alt hesap menüsü (sol alt) — Hesap · Bildirimler · Çıkış */}
+      <div className="border-t border-slate-100 p-2.5">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              title={!expanded ? userName : undefined}
+              className={`group w-full flex items-center gap-2.5 rounded-2xl px-2 py-2 text-left transition-colors hover:bg-slate-100 ${expanded ? '' : 'lg:justify-center'}`}
+            >
+              <Avatar className="h-9 w-9 shrink-0">
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
+              <div className={`flex-1 min-w-0 ${hideOnCollapse}`}>
+                <div className="text-[13.5px] font-semibold text-slate-800 truncate">{userName}</div>
+                {roleName && <div className="text-[11px] text-slate-400 truncate">{roleName}</div>}
+              </div>
+              <ChevronsUpDown className={`w-4 h-4 text-slate-400 shrink-0 ${hideOnCollapse}`} />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="start" className="w-60">
+            <DropdownMenuLabel>
+              <div className="text-sm font-semibold text-slate-800 truncate">{userName}</div>
+              {roleName && <div className="text-[11px] font-normal text-slate-400 truncate">{roleName}</div>}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => go('account')}>
+              <UserIcon className="w-4 h-4 text-slate-400" /> Hesabım
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => go('notifications')}>
+              <Bell className="w-4 h-4 text-slate-400" /> Bildirimler
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onLogout?.()} className="text-rose-600 focus:bg-rose-50">
+              <LogOut className="w-4 h-4" /> Çıkış Yap
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 }

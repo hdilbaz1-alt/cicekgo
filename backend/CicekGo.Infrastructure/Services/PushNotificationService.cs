@@ -18,15 +18,18 @@ public class PushNotificationService : IPushNotificationService
 {
     private readonly MasterDbContext _db;
     private readonly IPlatformSettingsService _platform;
+    private readonly INotificationFeedService _feed;
     private readonly ILogger<PushNotificationService> _log;
 
-    public PushNotificationService(MasterDbContext db, IPlatformSettingsService platform, ILogger<PushNotificationService> log)
+    public PushNotificationService(MasterDbContext db, IPlatformSettingsService platform, INotificationFeedService feed, ILogger<PushNotificationService> log)
     {
-        _db = db; _platform = platform; _log = log;
+        _db = db; _platform = platform; _feed = feed; _log = log;
     }
 
     public async Task SendToUserAsync(int userId, NotificationPayload payload, CancellationToken ct = default)
     {
+        // Önce kalıcı kayıt (zil listesi) — cihaz aboneliği olmasa bile bildirim görünür
+        await _feed.AddAsync(userId, null, payload.Title, payload.Body, payload.Url, payload.Tag, ct);
         var subs = await _db.PushSubscriptions.Where(s => s.UserId == userId).ToListAsync(ct);
         await SendManyAsync(subs, payload, ct);
     }
@@ -35,6 +38,7 @@ public class PushNotificationService : IPushNotificationService
     {
         if (string.IsNullOrWhiteSpace(dto.Title)) throw new AppException("Başlık gerekli.");
         IQueryable<PushSubscription> q = _db.PushSubscriptions;
+        IQueryable<User> uq = _db.Users.Where(u => u.IsActive);
 
         if (isPlatformAdmin && string.Equals(dto.Scope, "all", StringComparison.OrdinalIgnoreCase))
         {
@@ -45,6 +49,20 @@ public class PushNotificationService : IPushNotificationService
             var tid = isPlatformAdmin ? dto.TenantId : callerTenantId;
             if (tid is null) throw new AppException("Hedef firma belirlenemedi.");
             q = q.Where(s => s.TenantId == tid);
+            uq = uq.Where(u => u.TenantId == tid);
+        }
+
+        // Kalıcı kayıt: kapsamdaki tüm kullanıcılar için (toplu)
+        var targets = await uq.Select(u => new { u.Id, u.TenantId }).ToListAsync(ct);
+        if (targets.Count > 0)
+        {
+            var now = DateTime.UtcNow;
+            _db.Notifications.AddRange(targets.Select(t => new Notification
+            {
+                UserId = t.Id, TenantId = t.TenantId, Title = dto.Title, Body = dto.Body,
+                Url = dto.Url, Type = "broadcast", IsRead = false, CreatedAtUtc = now,
+            }));
+            await _db.SaveChangesAsync(ct);
         }
 
         var subs = await q.ToListAsync(ct);

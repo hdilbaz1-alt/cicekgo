@@ -47,6 +47,13 @@ export const API_CONFIG = {
     NOTIF_UNSUBSCRIBE: '/api/Notifications/unsubscribe',
     NOTIF_BROADCAST: '/api/Notifications/broadcast',
     NOTIF_TEST: '/api/Notifications/test',
+    NOTIF_LIST: '/api/Notifications/list',
+    NOTIF_UNREAD: '/api/Notifications/unread-count',
+    NOTIF_READ: '/api/Notifications', // /{id}/read
+    NOTIF_READ_ALL: '/api/Notifications/read-all',
+    ACCOUNT_ME: '/api/Account/me',
+    ACCOUNT_PROFILE: '/api/Account/profile',
+    ACCOUNT_CHANGE_PASSWORD: '/api/Account/change-password',
     PRODUCT_TYPE_LIST: '/api/ProductType/list',
     PRODUCT_TYPE_ADD: '/api/ProductType/add',
     PRODUCT_TYPE_UPDATE: '/api/ProductType/update',

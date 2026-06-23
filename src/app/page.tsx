@@ -27,9 +27,11 @@ import PaymentMethodsPage from '@/components/PaymentMethodsPage';
 import AddressSettingsPage from '@/components/AddressSettingsPage';
 import NonCariPage from '@/components/NonCariPage';
 import NotificationsPage from '@/components/NotificationsPage';
+import AccountPage from '@/components/AccountPage';
 import MorePage from '@/components/MorePage';
 import CommandPalette from '@/components/CommandPalette';
 import { Search } from 'lucide-react';
+import NotificationBell from '@/components/NotificationBell';
 import SuperAdminPanel from '@/components/SuperAdminPanel';
 
 import { authService } from '@/services/authService';
@@ -41,11 +43,11 @@ const PAGE_TITLES: Record<string, string> = {
   'deleted-orders': 'Silinen Siparişler', 'audit-log': 'İşlem Kayıtları', 'order-codes': 'Sipariş Kodları',
   units: 'Birim Ayarları', 'store-hours': 'Çalışma Saatleri', 'order-status': 'Sipariş Durumları',
   'print-templates': 'Yazdırma Şablonları', 'payment-methods': 'Ödeme Yöntemleri',
-  'address-settings': 'Varsayılan Adres', notifications: 'Bildirimler',
+  'address-settings': 'Varsayılan Adres', notifications: 'Bildirimler', account: 'Hesap Ayarları',
 };
 
 export default function HomePage() {
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ name?: string; email?: string; userName?: string; roles?: { id: number; name: string }[] } | null>(null);
   const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean | null>(null);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -163,7 +165,9 @@ export default function HomePage() {
       case 'address-settings':
         return <AddressSettingsPage />;
       case 'notifications':
-        return <NotificationsPage />;
+        return <NotificationsPage onNavigate={handlePageChange} />;
+      case 'account':
+        return <AccountPage onNavigate={handlePageChange} />;
       case 'more':
         return <MorePage onNavigate={handlePageChange} onLogout={handleLogout} />;
       default:
@@ -201,6 +205,8 @@ export default function HomePage() {
           onPageChange={handlePageChange}
           currentPage={currentPage}
           onCreateOrder={() => { handlePageChange('orders'); setIsCreateModalOpen(true); }}
+          user={user}
+          onLogout={handleLogout}
         />
       </div>
 
@@ -209,10 +215,9 @@ export default function HomePage() {
         {/* Masaüstü başlık */}
         <div className="hidden lg:block">
           <Header
-            user={user}
-            onLogout={handleLogout}
             onMenuClick={() => {}}
             onSearchClick={() => setCmdOpen(true)}
+            onNavigate={handlePageChange}
             title={PAGE_TITLES[currentPage]}
           />
         </div>
@@ -223,7 +228,10 @@ export default function HomePage() {
             <img src="/cicekgologo.png" alt="ÇiçekGo" className="h-7 w-auto object-contain" />
             <span className="font-semibold text-slate-800 truncate">{PAGE_TITLES[currentPage] || ''}</span>
           </div>
-          <button onClick={() => setCmdOpen(true)} title="Ara" className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100"><Search className="w-5 h-5" /></button>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setCmdOpen(true)} title="Ara" className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100"><Search className="w-5 h-5" /></button>
+            <NotificationBell onNavigate={handlePageChange} />
+          </div>
         </header>
 
         {/* İçerik */}

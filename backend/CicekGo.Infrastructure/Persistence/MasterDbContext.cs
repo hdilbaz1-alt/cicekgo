@@ -19,6 +19,7 @@ public class MasterDbContext : DbContext
     public DbSet<PlatformSetting> PlatformSettings => Set<PlatformSetting>();
     public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -126,6 +127,16 @@ public class MasterDbContext : DbContext
             e.HasIndex(x => x.Endpoint).IsUnique();
             e.HasIndex(x => x.UserId);
             e.HasIndex(x => x.TenantId);
+        });
+
+        b.Entity<Notification>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Title).IsRequired().HasMaxLength(200);
+            e.Property(x => x.Body).IsRequired().HasMaxLength(1000);
+            e.Property(x => x.Url).HasMaxLength(500);
+            e.Property(x => x.Type).HasMaxLength(50);
+            e.HasIndex(x => new { x.UserId, x.CreatedAtUtc });
         });
     }
 }

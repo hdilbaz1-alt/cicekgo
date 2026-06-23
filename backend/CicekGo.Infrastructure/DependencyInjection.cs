@@ -71,6 +71,7 @@ public static class DependencyInjection
         services.AddScoped<Application.Platform.IPlatformSettingsService, PlatformSettingsService>();
         services.AddScoped<Application.Notifications.IPushSubscriptionService, PushSubscriptionService>();
         services.AddScoped<Application.Notifications.IPushNotificationService, PushNotificationService>();
+        services.AddScoped<Application.Notifications.INotificationFeedService, NotificationFeedService>();
         services.AddScoped<Application.Products.IProductService, ProductService>();
         services.AddScoped<Application.Products.IStockService, StockService>();
         services.AddScoped<Application.Products.IUnitService, UnitService>();

@@ -33,6 +33,10 @@ public class AccountService : IAccountService
         {
             UserId = u.Id, Username = u.Username, FullName = u.FullName, Email = u.Email,
             TenantName = u.Tenant?.Name,
+            CreatedAtUtc = u.CreatedAtUtc,
+            LastLoginAtUtc = u.LastLoginAtUtc,
+            LkStart = u.Tenant?.LicenseStartUtc,
+            LkEnd = u.Tenant?.LicenseEndUtc,
             Roles = u.UserRoles.Select(r => r.Role!.Name).ToList(),
             Permissions = _current.Permissions.ToList(),
         };

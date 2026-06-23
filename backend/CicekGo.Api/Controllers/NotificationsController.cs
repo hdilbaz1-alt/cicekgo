@@ -16,13 +16,45 @@ public class NotificationsController : ControllerBase
 {
     private readonly IPushSubscriptionService _subs;
     private readonly IPushNotificationService _push;
+    private readonly INotificationFeedService _feed;
     private readonly IPlatformSettingsService _platform;
     private readonly ICurrentUser _current;
 
     public NotificationsController(IPushSubscriptionService subs, IPushNotificationService push,
-        IPlatformSettingsService platform, ICurrentUser current)
+        INotificationFeedService feed, IPlatformSettingsService platform, ICurrentUser current)
     {
-        _subs = subs; _push = push; _platform = platform; _current = current;
+        _subs = subs; _push = push; _feed = feed; _platform = platform; _current = current;
+    }
+
+    /// <summary>Kullanıcının kalıcı bildirim listesi (zil).</summary>
+    [HttpGet("list")]
+    public async Task<ActionResult<ApiResponse<List<NotificationItemDto>>>> List([FromQuery] int take = 50, CancellationToken ct = default)
+    {
+        if (_current.UserId is null) return Unauthorized();
+        return Ok(ApiResponse<List<NotificationItemDto>>.Ok(await _feed.ListAsync(_current.UserId.Value, take, ct)));
+    }
+
+    [HttpGet("unread-count")]
+    public async Task<ActionResult<ApiResponse<int>>> UnreadCount(CancellationToken ct)
+    {
+        if (_current.UserId is null) return Unauthorized();
+        return Ok(ApiResponse<int>.Ok(await _feed.UnreadCountAsync(_current.UserId.Value, ct)));
+    }
+
+    [HttpPost("{id:int}/read")]
+    public async Task<ActionResult<ApiResponse<string>>> MarkRead(int id, CancellationToken ct)
+    {
+        if (_current.UserId is null) return Unauthorized();
+        await _feed.MarkReadAsync(_current.UserId.Value, id, ct);
+        return Ok(ApiResponse<string>.Ok("ok"));
+    }
+
+    [HttpPost("read-all")]
+    public async Task<ActionResult<ApiResponse<string>>> MarkAllRead(CancellationToken ct)
+    {
+        if (_current.UserId is null) return Unauthorized();
+        await _feed.MarkAllReadAsync(_current.UserId.Value, ct);
+        return Ok(ApiResponse<string>.Ok("ok"));
     }
 
     /// <summary>Tarayıcı aboneliği için VAPID public key.</summary>
